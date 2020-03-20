@@ -11,8 +11,8 @@ import android.util.Log;
 public class JsonParser {
 
     final static String TAG = "JsonParser.java";
+    final static String API_URL = "http://89.216.122.162:8080/tkomserver/jsonData/api";
 
-    static InputStream is = null;
     static JSONObject jObj = null;
     static String json = "";
 
@@ -75,12 +75,11 @@ public class JsonParser {
 
         ContentValues nameValuePairs = new ContentValues();
 
-        //ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
         nameValuePairs.put("userEmail", username);
         nameValuePairs.put("userPass", password);
         nameValuePairs.put("action", "login");
 
-        JSONObject result = getJSONFromUrl("http://89.216.122.162:8080/tkomserver/jsonData/api", nameValuePairs);
+        JSONObject result = getJSONFromUrl(API_URL, nameValuePairs);
 
         if (result != null) {
             try {
@@ -90,7 +89,7 @@ public class JsonParser {
                 String e = o.getString("email");
                 String pass = o.getString("password");
                 String reg = o.getString("acRegNo");
-                User u = new User(e, pass, reg, "http://89.216.122.162:8080/tkomserver/jsonData/api");
+                User u = new User(e, pass, reg, API_URL);
                 return u;
             } catch (Exception e) {
                 //TODO: handle exception
