@@ -20,6 +20,12 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        try
+        {
+            this.getSupportActionBar().hide();
+        }
+        catch (NullPointerException e){}
         setContentView(R.layout.activity_login);
 
         TextView messageTextView = findViewById(R.id.text_view_message);
@@ -47,6 +53,7 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
             // proceed to next activity
             Intent intent = new Intent(this, ProductListActivity.class);
             startActivity(intent);
+            finish();
         } else {
             // mark as error
             TextView messageTextView = findViewById(R.id.text_view_message);

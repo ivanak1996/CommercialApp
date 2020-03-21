@@ -3,6 +3,7 @@ package com.example.commercialapp;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
@@ -20,4 +21,10 @@ public class ProductListActivity extends AppCompatActivity {
         userViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
     }
 
+    public void onClickLogout(View view) {
+        userViewModel.deleteAll();
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+        finish();
+    }
 }
