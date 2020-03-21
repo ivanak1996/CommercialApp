@@ -7,41 +7,105 @@ import androidx.room.PrimaryKey;
 public class User {
 
     @PrimaryKey(autoGenerate = true)
-    private int id;
+    private int rowId;
 
-    private String username;
+    private String acName2;
+    private String acAddress;
+    private String acRegNo;
+    private String acSubject;
     private String password;
-    private String regId;
-    private String serverUrl;
+    private String anDoeplo;
+    private String acCity;
+    private String anNedospelo;
+    private String acCode;
+    private String id;
+    private String acClerk;
+    private String acPost;
+    private String email;
+    private String anLimit;
 
-    public User(String username, String password, String regId, String serverUrl) {
-        this.username = username;
+    public User(String acName2, String acAddress, String acRegNo, String acSubject, String password, String anDoeplo, String acCity, String anNedospelo, String acCode, String id, String acClerk, String acPost, String email, String anLimit) {
+        this.acName2 = acName2;
+        this.acAddress = acAddress;
+        this.acRegNo = acRegNo;
+        this.acSubject = acSubject;
         this.password = password;
-        this.regId = regId;
-        this.serverUrl = serverUrl;
-    }
-
-    public void setId(int id) {
+        this.anDoeplo = anDoeplo;
+        this.acCity = acCity;
+        this.anNedospelo = anNedospelo;
+        this.acCode = acCode;
         this.id = id;
+        this.acClerk = acClerk;
+        this.acPost = acPost;
+        this.email = email;
+        this.anLimit = anLimit;
     }
 
-    public int getId() {
-        return id;
+    public void setRowId(int rowId) {
+        this.rowId = rowId;
     }
 
-    public String getUsername() {
-        return username;
+    // region getters
+
+    public int getRowId() {
+        return rowId;
+    }
+
+    public String getAcName2() {
+        return acName2;
+    }
+
+    public String getAcAddress() {
+        return acAddress;
+    }
+
+    public String getAcRegNo() {
+        return acRegNo;
+    }
+
+    public String getAcSubject() {
+        return acSubject;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public String getRegId() {
-        return regId;
+    public String getAnDoeplo() {
+        return anDoeplo;
     }
 
-    public String getServerUrl() {
-        return serverUrl;
+    public String getAcCity() {
+        return acCity;
     }
+
+    public String getAnNedospelo() {
+        return anNedospelo;
+    }
+
+    public String getAcCode() {
+        return acCode;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getAcClerk() {
+        return acClerk;
+    }
+
+    public String getAcPost() {
+        return acPost;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getAnLimit() {
+        return anLimit;
+    }
+
+    // endregion
 }

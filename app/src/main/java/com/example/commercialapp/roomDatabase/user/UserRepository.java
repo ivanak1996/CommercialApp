@@ -41,10 +41,6 @@ public class UserRepository {
         return allUsers;
     }
 
-    public LiveData<User> getUserByUsernameAndPassword(String username, String password) {
-        return userDao.getUserByUsernameAndPassword(username, password);
-    }
-
     private static class InsertUserAsyncTask extends AsyncTask<User, Void, Void> {
 
         private UserDao userDao;

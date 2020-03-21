@@ -2,8 +2,13 @@ package com.example.commercialapp;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+
 import org.json.*;
+
+import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlace;
 import com.example.commercialapp.roomDatabase.user.User;
+
 import android.content.ContentValues;
 import android.util.Log;
 
@@ -71,12 +76,12 @@ public class JsonParser {
         return jObj;
     }
 
-    public static User getUserFromApi(String username, String password) {
+    public static LoginUserResult getUserDataFromApi(String username, String pass) {
 
         ContentValues nameValuePairs = new ContentValues();
 
         nameValuePairs.put("userEmail", username);
-        nameValuePairs.put("userPass", password);
+        nameValuePairs.put("userPass", pass);
         nameValuePairs.put("action", "login");
 
         JSONObject result = getJSONFromUrl(API_URL, nameValuePairs);
@@ -86,16 +91,52 @@ public class JsonParser {
                 JSONArray list = result.getJSONArray("login");
 
                 JSONObject o = list.getJSONObject(0);
-                String e = o.getString("email");
-                String pass = o.getString("password");
-                String reg = o.getString("acRegNo");
-                User u = new User(e, pass, reg, API_URL);
-                return u;
+                User u = getUserFromJSONObject(o);
+
+                // add delivery places as well
+                JSONArray deliveryPlaces = o.getJSONArray("MESTOISPORUKE");
+                ArrayList<DeliveryPlace> deliveryPlacesList = new ArrayList<>();
+
+                for (int i = 0; i < deliveryPlaces.length(); i++) {
+                    JSONObject dp = deliveryPlaces.getJSONObject(i);
+                    deliveryPlacesList.add(getDeliveryPlaceFromJSONObject(dp, u.getRowId()));
+                }
+
+                return new LoginUserResult(u, deliveryPlacesList);
+
             } catch (Exception e) {
                 //TODO: handle exception
             }
         }
-
         return null;
+    }
+
+    private static DeliveryPlace getDeliveryPlaceFromJSONObject(JSONObject o, int userRowId) throws JSONException {
+        String acName2 = o.getString("acName2");
+        String acAddress = o.getString("acAddress");
+        String acCity = o.getString("acCity");
+        String anQId = o.getString("anQId");
+        String acPost = o.getString("acPost");
+        String acSubject = o.getString("acSubject");
+
+        return new DeliveryPlace(userRowId, acName2, acAddress, acCity, anQId, acPost, acSubject);
+    }
+
+    private static User getUserFromJSONObject(JSONObject o) throws JSONException {
+        String acName2 = o.getString("acName2");
+        String acAddress = o.getString("acAddress");
+        String acRegNo = o.getString("acRegNo");
+        String acSubject = o.getString("acSubject");
+        String password = o.getString("password");
+        String anDoeplo = o.getString("anDoeplo");
+        String acCity = o.getString("acCity");
+        String anNedospelo = o.getString("anNedospelo");
+        String acCode = o.getString("acCode");
+        String id = o.getString("id");
+        String acClerk = o.getString("acClerk");
+        String acPost = o.getString("acPost");
+        String email = o.getString("email");
+        String anLimit = o.getString("anLimit");
+        return new User(acName2, acAddress, acRegNo, acSubject, password, anDoeplo, acCity, anNedospelo, acCode, id, acClerk, acPost, email, anLimit);
     }
 }

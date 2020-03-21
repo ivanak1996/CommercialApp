@@ -10,12 +10,17 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlace;
+import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlaceViewModel;
 import com.example.commercialapp.roomDatabase.user.User;
 import com.example.commercialapp.roomDatabase.user.UserViewModel;
+
+import java.util.List;
 
 public class LoginActivity extends AppCompatActivity implements AsyncResponse {
 
     private UserViewModel userViewModel;
+    private DeliveryPlaceViewModel deliveryPlaceViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +37,7 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
         messageTextView.setText("");
 
         userViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
+        deliveryPlaceViewModel = ViewModelProviders.of(this).get(DeliveryPlaceViewModel.class);
     }
 
     public void onClickLogin(View view) {
@@ -46,10 +52,18 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
     }
 
     @Override
-    public void processFinish(User user) {
-        if (user != null) {
+    public void processFinish(LoginUserResult result) {
+
+        if (result != null) {
+            User user = result.getUser();
+            List<DeliveryPlace> places = result.getDeliveryPlaces();
+
             // save to db
             userViewModel.insert(user);
+            for(DeliveryPlace place: places) {
+                deliveryPlaceViewModel.insert(place);
+            }
+
             // proceed to next activity
             Intent intent = new Intent(this, ProductListActivity.class);
             startActivity(intent);
@@ -61,7 +75,7 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
         }
     }
 
-    private static class GetUserFromApiAsyncTask extends AsyncTask<Void, Void, User> {
+    private static class GetUserFromApiAsyncTask extends AsyncTask<Void, Void, LoginUserResult> {
 
         private AsyncResponse delegate;
         private String username;
@@ -74,14 +88,14 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
         }
 
         @Override
-        protected User doInBackground(Void... voids) {
-            User user = JsonParser.getUserFromApi(username, password);
-            return user;
+        protected LoginUserResult doInBackground(Void... voids) {
+            LoginUserResult result = JsonParser.getUserDataFromApi(username, password);
+            return result;
         }
 
         @Override
-        protected void onPostExecute(User user) {
-            delegate.processFinish(user);
+        protected void onPostExecute(LoginUserResult res) {
+            delegate.processFinish(res);
         }
     }
 }

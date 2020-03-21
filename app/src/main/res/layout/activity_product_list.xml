@@ -11,6 +11,11 @@
         android:text="Welcome :)"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+    <TextView
+        android:id="@+id/text_view_number_of_places"
+        android:text="number of delivery places: "
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 
     <Button
         android:text="logout"

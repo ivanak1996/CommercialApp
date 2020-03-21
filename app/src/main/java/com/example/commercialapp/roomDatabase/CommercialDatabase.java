@@ -9,16 +9,19 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
+import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlace;
+import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlaceDao;
 import com.example.commercialapp.roomDatabase.user.User;
 import com.example.commercialapp.roomDatabase.user.UserDao;
 
 
-@Database(entities = {User.class}, version = 1, exportSchema = false)
+@Database(entities = {User.class, DeliveryPlace.class}, version = 2, exportSchema = false)
 public abstract class CommercialDatabase extends RoomDatabase {
 
     private static CommercialDatabase instance;
 
     public abstract UserDao userDao();
+    public abstract DeliveryPlaceDao deliveryPlaceDao();
 
     public static synchronized CommercialDatabase getInstance(Context context) {
         if(instance == null) {

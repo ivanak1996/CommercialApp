@@ -41,7 +41,4 @@ public class UserViewModel extends AndroidViewModel {
         return allUsers;
     }
 
-    public LiveData<User> getUserByUsernameAndPassword(String username, String password) {
-        return userRepository.getUserByUsernameAndPassword(username, password);
-    }
 }
