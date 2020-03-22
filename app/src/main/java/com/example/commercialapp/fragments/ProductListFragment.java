@@ -54,7 +54,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                new GetProductListFromApiAsyncTask(ProductListFragment.this, user.getEmail(), user.getPassword()).execute();
+                new GetProductListFromApiAsyncTask(ProductListFragment.this, user.getEmail(), user.getPassword(), query).execute();
                 return false;
             }
 
@@ -90,16 +90,18 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         private ProductListAsyncResponse delegate;
         private String username;
         private String password;
+        private String keyword;
 
-        public GetProductListFromApiAsyncTask(ProductListAsyncResponse delegate, String username, String password) {
+        public GetProductListFromApiAsyncTask(ProductListAsyncResponse delegate, String username, String password, String keyword) {
             this.delegate = delegate;
             this.username = username;
             this.password = password;
+            this.keyword = keyword;
         }
 
         @Override
         protected List<ProductModel> doInBackground(Void... voids) {
-            return JsonParser.getProductsFromApi(username, password, "");
+            return JsonParser.getProductsFromApi(username, password, keyword);
         }
 
         @Override
