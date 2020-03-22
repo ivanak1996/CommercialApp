@@ -5,7 +5,8 @@ import android.os.AsyncTask;
 
 import androidx.lifecycle.LiveData;
 
-import com.example.commercialapp.UsersCountAsyncResponse;
+import com.example.commercialapp.asyncResponses.GetUserFromDbAsyncResponse;
+import com.example.commercialapp.asyncResponses.UsersCountAsyncResponse;
 import com.example.commercialapp.roomDatabase.CommercialDatabase;
 
 import java.util.List;
@@ -29,16 +30,16 @@ public class UserRepository {
         new UsersCountAsyncTask(userDao, response).execute();
     }
 
-    public void delete(User user) {
-        new DeleteUserAsyncTask(userDao).execute(user);
-    }
-
     public void deleteAll(){
         new DeleteAllAsyncTask(userDao).execute();
     }
 
     public LiveData<List<User>> getAllUsers() {
         return allUsers;
+    }
+
+    public void getUser(GetUserFromDbAsyncResponse response) {
+        new GetUserAsyncTask(userDao, response).execute();
     }
 
     private static class InsertUserAsyncTask extends AsyncTask<User, Void, Void> {
@@ -52,21 +53,6 @@ public class UserRepository {
         @Override
         protected Void doInBackground(User... users) {
             userDao.insert(users[0]);
-            return null;
-        }
-    }
-
-    private static class DeleteUserAsyncTask extends AsyncTask<User, Void, Void> {
-
-        private UserDao userDao;
-
-        public DeleteUserAsyncTask(UserDao userDao) {
-            this.userDao = userDao;
-        }
-
-        @Override
-        protected Void doInBackground(User... users) {
-            userDao.delete(users[0]);
             return null;
         }
     }
@@ -104,6 +90,27 @@ public class UserRepository {
         @Override
         protected void onPostExecute(Integer integer) {
             response.processFinish(integer.intValue());
+        }
+    }
+
+    private static class GetUserAsyncTask extends AsyncTask<Void, Void, User> {
+
+        private UserDao userDao;
+        private GetUserFromDbAsyncResponse response;
+
+        public GetUserAsyncTask(UserDao userDao, GetUserFromDbAsyncResponse response) {
+            this.userDao = userDao;
+            this.response = response;
+        }
+
+        @Override
+        protected User doInBackground(Void... voids) {
+            return userDao.getUser();
+        }
+
+        @Override
+        protected void onPostExecute(User user) {
+            response.processFinish(user);
         }
     }
 }

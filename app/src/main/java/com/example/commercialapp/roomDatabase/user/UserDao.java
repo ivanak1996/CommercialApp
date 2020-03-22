@@ -1,10 +1,7 @@
 package com.example.commercialapp.roomDatabase.user;
 
 import androidx.lifecycle.LiveData;
-import androidx.room.Dao;
-import androidx.room.Delete;
-import androidx.room.Insert;
-import androidx.room.Query;
+import androidx.room.*;
 
 import java.util.List;
 
@@ -13,9 +10,6 @@ public interface UserDao {
 
     @Insert
     void insert(User user);
-
-    @Delete
-    void delete(User user);
 
     @Query("delete from user_table")
     void deleteAll();
@@ -26,4 +20,6 @@ public interface UserDao {
     @Query("select * from user_table")
     LiveData<List<User>> getAllUsers();
 
+    @Query("select * from user_table limit 1")
+    User getUser();
 }

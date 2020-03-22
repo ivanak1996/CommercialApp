@@ -1,4 +1,4 @@
-package com.example.commercialapp;
+package com.example.commercialapp.models;
 
 import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlace;
 import com.example.commercialapp.roomDatabase.user.User;

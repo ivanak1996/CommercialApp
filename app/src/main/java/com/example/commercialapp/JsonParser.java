@@ -3,16 +3,18 @@ package com.example.commercialapp;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.json.*;
 
+import com.example.commercialapp.models.LoginUserResult;
+import com.example.commercialapp.models.ProductModel;
 import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlace;
 import com.example.commercialapp.roomDatabase.user.User;
 
-import android.content.ContentValues;
 import android.util.Log;
 
-
+// TODO: think of a more intelligent way to generate query string
 public class JsonParser {
 
     final static String TAG = "JsonParser.java";
@@ -21,16 +23,10 @@ public class JsonParser {
     static JSONObject jObj = null;
     static String json = "";
 
-    public static String getJSONFromUrlStr(String url, ContentValues nameValuePairs) {
+    public static String getJSONFromUrlStrQuery(String url, String q) {
         try {
             String charset = "UTF-8";
-            String userEmail = nameValuePairs.getAsString("userEmail");
-            String userPass = nameValuePairs.getAsString("userPass");
-            String action = nameValuePairs.getAsString("action");
-            String query = String.format("userEmail=%s&userPass=%s&action=%s",
-                    URLEncoder.encode(userEmail, charset),
-                    URLEncoder.encode(userPass, charset),
-                    URLEncoder.encode(action, charset));
+            String query = q;
 
             Log.d("url", query);
 
@@ -62,9 +58,9 @@ public class JsonParser {
         return null;
     }
 
-    public static JSONObject getJSONFromUrl(String url, ContentValues nameValuePairs) {
+    public static JSONObject getJSONFromUrlQuery(String url, String q) {
 
-        json = getJSONFromUrlStr(url, nameValuePairs);
+        json = getJSONFromUrlStrQuery(url, q);
         Log.e(TAG, "Error String" + json);
         try {
             jObj = new JSONObject(json);
@@ -76,15 +72,69 @@ public class JsonParser {
         return jObj;
     }
 
-    public static LoginUserResult getUserDataFromApi(String username, String pass) {
 
-        ContentValues nameValuePairs = new ContentValues();
+    public static List<ProductModel> getProductsFromApi(String userEmail, String userPassword, String keyword) {
 
-        nameValuePairs.put("userEmail", username);
-        nameValuePairs.put("userPass", pass);
-        nameValuePairs.put("action", "login");
+        ArrayList<ProductModel> productModels = new ArrayList<>();
 
-        JSONObject result = getJSONFromUrl(API_URL, nameValuePairs);
+        String charset = "UTF-8";
+        String action = "products";
+        String query;
+
+        try {
+            query = String.format("userEmail=%s&userPass=%s&action=%s",
+                    URLEncoder.encode(userEmail, charset),
+                    URLEncoder.encode(userPassword, charset),
+                    URLEncoder.encode(action, charset));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return productModels;
+        }
+
+        JSONObject result = getJSONFromUrlQuery(API_URL, query);
+
+        if (result != null) {
+            try {
+                JSONArray list = result.getJSONArray("products");
+                for (int j = 0; j < list.length(); j++) {
+                    JSONObject o = list.getJSONObject(j);
+                    String a = o.getString("a");
+                    String b = o.getString("b");
+                    String c = o.getString("c");
+                    String d = o.getString("d");
+                    String e = o.getString("e");
+                    String f = o.getString("f");
+                    String v = o.getString("v");
+                    String p = o.getString("p");
+                    String r = o.getString("r");
+                    String i = o.getString("i");
+                    productModels.add(new ProductModel(a, b, c, d, e, f, v, p, r, i));
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return productModels;
+    }
+
+    public static LoginUserResult getUserDataFromApi(String userEmail, String userPassword) {
+
+        String charset = "UTF-8";
+        String action = "login";
+        String query;
+
+        try {
+            query = String.format("userEmail=%s&userPass=%s&action=%s",
+                    URLEncoder.encode(userEmail, charset),
+                    URLEncoder.encode(userPassword, charset),
+                    URLEncoder.encode(action, charset));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        JSONObject result = getJSONFromUrlQuery(API_URL, query);
 
         if (result != null) {
             try {
@@ -110,6 +160,7 @@ public class JsonParser {
         }
         return null;
     }
+
 
     private static DeliveryPlace getDeliveryPlaceFromJSONObject(JSONObject o, int userRowId) throws JSONException {
         String acName2 = o.getString("acName2");

@@ -6,7 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.example.commercialapp.UsersCountAsyncResponse;
+import com.example.commercialapp.asyncResponses.GetUserFromDbAsyncResponse;
+import com.example.commercialapp.asyncResponses.UsersCountAsyncResponse;
 
 import java.util.List;
 
@@ -29,16 +30,12 @@ public class UserViewModel extends AndroidViewModel {
         userRepository.usersCount(response);
     }
 
-    public void delete(User user) {
-        userRepository.delete(user);
+    public void getUser(GetUserFromDbAsyncResponse response) {
+        userRepository.getUser(response);
     }
 
     public void deleteAll() {
         userRepository.deleteAll();
-    }
-
-    public LiveData<List<User>> getAllUsers() {
-        return allUsers;
     }
 
 }

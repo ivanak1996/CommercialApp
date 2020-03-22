@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    app:startDestination="@id/productListScreenFragment">
+
+    <fragment android:id="@+id/productListScreenFragment"
+        android:name="com.example.commercialapp.fragments.ProductListFragment"
+        android:label="product list"
+        tools:layout="@layout/fragment_product_list"/>
+
+    <fragment android:id="@+id/anotherFragment"
+        android:name="com.example.commercialapp.fragments.AnotherFragment"
+        android:label="another"
+        tools:layout="@layout/fragment_another"/>
+</navigation>
