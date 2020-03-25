@@ -8,6 +8,7 @@ import java.util.List;
 import org.json.*;
 
 import com.example.commercialapp.models.LoginUserResult;
+import com.example.commercialapp.models.ProductGroupModel;
 import com.example.commercialapp.models.ProductModel;
 import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlace;
 import com.example.commercialapp.roomDatabase.user.User;
@@ -70,6 +71,43 @@ public class JsonParser {
 
         // return JSON String
         return jObj;
+    }
+
+    public static List<ProductGroupModel> getProductGroupsFromApi(String userEmail, String userPassword) {
+        ArrayList<ProductGroupModel> productGroups = new ArrayList<>();
+
+        String charset = "UTF-8";
+        String action = "groups";
+        String query;
+
+        try {
+            query = String.format("userEmail=%s&userPass=%s&action=%s",
+                    URLEncoder.encode(userEmail, charset),
+                    URLEncoder.encode(userPassword, charset),
+                    URLEncoder.encode(action, charset));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return productGroups;
+        }
+
+        JSONObject result = getJSONFromUrlQuery(API_URL, query);
+
+        if (result != null) {
+            try {
+                JSONArray list = result.getJSONArray("groups");
+                for (int j = 0; j < list.length(); j++) {
+                    JSONObject o = list.getJSONObject(j);
+                    String a = o.getString("a").trim();
+                    String b = o.getString("b");
+                    productGroups.add(new ProductGroupModel(a, b));
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return productGroups;
+
     }
 
 

@@ -1,34 +1,32 @@
 package com.example.commercialapp.fragments;
 
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.SearchView;
+import android.os.*;
+import android.view.*;
+import android.widget.*;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
+import androidx.fragment.app.*;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.*;
 
 import com.example.commercialapp.JsonParser;
-import com.example.commercialapp.asyncResponses.GetUserFromDbAsyncResponse;
-import com.example.commercialapp.asyncResponses.ProductListAsyncResponse;
+import com.example.commercialapp.asyncResponses.*;
 import com.example.commercialapp.R;
 import com.example.commercialapp.adapters.ProductAdapter;
-import com.example.commercialapp.models.ProductModel;
-import com.example.commercialapp.roomDatabase.user.User;
-import com.example.commercialapp.roomDatabase.user.UserViewModel;
+import com.example.commercialapp.dialogs.AddProductDialogFragment;
+import com.example.commercialapp.models.*;
+import com.example.commercialapp.roomDatabase.user.*;
 
-import java.util.List;
+import java.util.*;
 
-public class ProductListFragment extends Fragment implements ProductListAsyncResponse, GetUserFromDbAsyncResponse {
+public class ProductListFragment extends Fragment implements ProductListAsyncResponse, GetUserFromDbAsyncResponse, ProductGroupsAsyncResponse {
 
     private RecyclerView productListRecyclerView;
     private ProductAdapter productListAdapter;
+    private List<ProductModel> productModels = new ArrayList<>();
+
+    private Spinner productGroupSpinner;
+    private List<ProductGroupModel> productGroupModels = new ArrayList<>();
 
     private LinearLayout loading;
     private LinearLayout loaded;
@@ -40,21 +38,34 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_product_list, container, false);
 
+        // product list setup
         productListRecyclerView = view.findViewById(R.id.recycler_view_productsList);
         productListRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         productListRecyclerView.setHasFixedSize(true);
 
         productListAdapter = new ProductAdapter();
+        productListAdapter.setOnItemClickListener(new ProductAdapter.ProductAdapterItemClickListener() {
+            @Override
+            public void onAddItemClick(int position) {
+                DialogFragment newFragment = new AddProductDialogFragment(productListAdapter.getProduct(position));
+                newFragment.show(getActivity().getSupportFragmentManager(), "missiles");
+            }
+        });
+
         productListRecyclerView.setAdapter(productListAdapter);
 
+        // get user data from database
         userViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
         userViewModel.getUser(this);
 
+
+        // search bar
         SearchView searchView = view.findViewById(R.id.search_view_products);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 new GetProductListFromApiAsyncTask(ProductListFragment.this, user.getEmail(), user.getPassword(), query).execute();
+                getActivity().getCurrentFocus().clearFocus();
                 return false;
             }
 
@@ -64,25 +75,70 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
             }
         });
 
+        // spinner for product group dropdown menu
+        productGroupSpinner = view.findViewById(R.id.spinner_productType);
+        productGroupSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (position == 0) {
+                    productListAdapter.setProducts(productModels);
+                    return;
+                }
+                String selectedGroup = productGroupModels.get(position).getA();
+                productListAdapter.setProducts(filterListBySelectedGroup(selectedGroup));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        // preview loading screen while user data from db is being awaited
         loading = view.findViewById(R.id.product_list_loading);
         loaded = view.findViewById(R.id.product_list_loading);
         loading.setVisibility(View.VISIBLE);
         loaded.setVisibility(View.GONE);
 
         return view;
-
     }
 
+
+    // search finished
     @Override
     public void processFinish(List<ProductModel> models) {
-        productListAdapter.setProducts(models);
+        productModels = models;
+        String selectedGroup = productGroupModels.get(productGroupSpinner.getSelectedItemPosition()).getA();
+        productListAdapter.setProducts(filterListBySelectedGroup(selectedGroup));
     }
 
+    // user has been loaded from db
     @Override
     public void processFinish(User output) {
         user = output;
+        new GetProductGroupListFromApiAsyncTask(this, user.getEmail(), user.getPassword()).execute();
         loaded.setVisibility(View.VISIBLE);
         loading.setVisibility(View.GONE);
+    }
+
+    // product groups have been fetched from api
+    @Override
+    public void productGroupsProcessFinish(List<ProductGroupModel> productGroups) {
+        productGroupModels = productGroups;
+        ArrayAdapter<ProductGroupModel> spinnerArrayAdapter = new ArrayAdapter<>
+                (getContext(), android.R.layout.simple_spinner_item, productGroups); //selected item will look like a spinner set from XML
+        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        productGroupSpinner.setAdapter(spinnerArrayAdapter);
+    }
+
+    private List<ProductModel> filterListBySelectedGroup(String selectedGroup) {
+        List<ProductModel> filteredProducts = new ArrayList<>();
+        for (ProductModel product : ProductListFragment.this.productModels) {
+            if (selectedGroup.equals(product.getD())) {
+                filteredProducts.add(product);
+            }
+        }
+        return filteredProducts;
     }
 
     private static class GetProductListFromApiAsyncTask extends AsyncTask<Void, Void, List<ProductModel>> {
@@ -107,6 +163,29 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         @Override
         protected void onPostExecute(List<ProductModel> productModels) {
             delegate.processFinish(productModels);
+        }
+    }
+
+    private static class GetProductGroupListFromApiAsyncTask extends AsyncTask<Void, Void, List<ProductGroupModel>> {
+
+        private ProductGroupsAsyncResponse delegate;
+        private String username;
+        private String password;
+
+        public GetProductGroupListFromApiAsyncTask(ProductGroupsAsyncResponse delegate, String username, String password) {
+            this.delegate = delegate;
+            this.username = username;
+            this.password = password;
+        }
+
+        @Override
+        protected List<ProductGroupModel> doInBackground(Void... voids) {
+            return JsonParser.getProductGroupsFromApi(username, password);
+        }
+
+        @Override
+        protected void onPostExecute(List<ProductGroupModel> productGroupModels) {
+            delegate.productGroupsProcessFinish(productGroupModels);
         }
     }
 }

@@ -3,6 +3,8 @@ package com.example.commercialapp.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,14 +18,23 @@ import java.util.List;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductHolder> {
 
+    public interface ProductAdapterItemClickListener {
+        void onAddItemClick(int position);
+    }
+
+    public void setOnItemClickListener(ProductAdapterItemClickListener listener) {
+        this.listener = listener;
+    }
+
     private List<ProductModel> products = new ArrayList<>();
+    private ProductAdapterItemClickListener listener;
 
     @NonNull
     @Override
     public ProductHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.product_list_item, parent, false);
-        return new ProductHolder(itemView);
+        return new ProductHolder(itemView, listener);
     }
 
     @Override
@@ -43,14 +54,38 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
         notifyDataSetChanged();
     }
 
+    public ProductModel getProduct(int position) {
+        try {
+            return this.products.get(position);
+        } catch (IndexOutOfBoundsException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     class ProductHolder extends RecyclerView.ViewHolder {
         private TextView textViewTitle;
         private TextView textViewDescription;
+        private ImageButton imageButtonAddItem;
 
-        public ProductHolder(@NonNull View itemView) {
+        public ProductHolder(@NonNull View itemView, final ProductAdapterItemClickListener listener) {
             super(itemView);
             textViewTitle = itemView.findViewById(R.id.text_view_productName);
             textViewDescription = itemView.findViewById(R.id.text_view_productDescription);
+            imageButtonAddItem = itemView.findViewById(R.id.image_button_add_item);
+
+            imageButtonAddItem.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (listener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            listener.onAddItemClick(position);
+                        }
+                    }
+                }
+            });
         }
     }
+
 }
