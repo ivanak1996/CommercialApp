@@ -9,8 +9,8 @@ import org.json.*;
 
 import com.example.commercialapp.models.LoginUserResult;
 import com.example.commercialapp.models.ProductGroupModel;
-import com.example.commercialapp.models.ProductModel;
 import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlace;
+import com.example.commercialapp.roomDatabase.products.Product;
 import com.example.commercialapp.roomDatabase.user.User;
 
 import android.util.Log;
@@ -111,9 +111,9 @@ public class JsonParser {
     }
 
 
-    public static List<ProductModel> getProductsFromApi(String userEmail, String userPassword, String keyword) {
+    public static List<Product> getProductsFromApi(String userEmail, String userPassword, String keyword) {
 
-        ArrayList<ProductModel> productModels = new ArrayList<>();
+        ArrayList<Product> productModels = new ArrayList<>();
 
         String charset = "UTF-8";
         String action = "products";
@@ -147,7 +147,8 @@ public class JsonParser {
                     String p = o.getString("p");
                     String r = o.getString("r");
                     String i = o.getString("i");
-                    productModels.add(new ProductModel(a, b, c, d, e, f, v, p, r, i));
+                    // TODO: edit this
+                    productModels.add(new Product(0, 1, a, b, c, d, e, f, v, p, r, i));
                 }
 
             } catch (JSONException e) {
@@ -201,7 +202,7 @@ public class JsonParser {
     }
 
 
-    private static DeliveryPlace getDeliveryPlaceFromJSONObject(JSONObject o, int userRowId) throws JSONException {
+    private static DeliveryPlace getDeliveryPlaceFromJSONObject(JSONObject o, long userRowId) throws JSONException {
         String acName2 = o.getString("acName2");
         String acAddress = o.getString("acAddress");
         String acCity = o.getString("acCity");

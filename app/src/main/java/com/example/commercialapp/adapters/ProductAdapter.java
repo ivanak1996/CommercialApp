@@ -11,7 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.commercialapp.R;
-import com.example.commercialapp.models.ProductModel;
+import com.example.commercialapp.roomDatabase.products.Product;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
         this.listener = listener;
     }
 
-    private List<ProductModel> products = new ArrayList<>();
+    private List<Product> products = new ArrayList<>();
     private ProductAdapterItemClickListener listener;
 
     @NonNull
@@ -39,7 +40,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
 
     @Override
     public void onBindViewHolder(@NonNull ProductHolder holder, int position) {
-        ProductModel currentProduct = products.get(position);
+        Product currentProduct = products.get(position);
         holder.textViewTitle.setText(currentProduct.getC());
         holder.textViewDescription.setText(currentProduct.getE());
     }
@@ -49,12 +50,12 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
         return products.size();
     }
 
-    public void setProducts(List<ProductModel> products) {
+    public void setProducts(List<Product> products) {
         this.products = products;
         notifyDataSetChanged();
     }
 
-    public ProductModel getProduct(int position) {
+    public Product getProduct(int position) {
         try {
             return this.products.get(position);
         } catch (IndexOutOfBoundsException e) {

@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey;
 public class User {
 
     @PrimaryKey(autoGenerate = true)
-    private int rowId;
+    private long rowId;
 
     private String acName2;
     private String acAddress;
@@ -41,13 +41,13 @@ public class User {
         this.anLimit = anLimit;
     }
 
-    public void setRowId(int rowId) {
+    public void setRowId(long rowId) {
         this.rowId = rowId;
     }
 
     // region getters
 
-    public int getRowId() {
+    public long getRowId() {
         return rowId;
     }
 

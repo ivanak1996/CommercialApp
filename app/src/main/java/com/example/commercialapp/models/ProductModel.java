@@ -1,6 +1,6 @@
 package com.example.commercialapp.models;
 
-public class ProductModel {
+class ProductModel {
 
     private String a; //id,
     private String b; //sifra prozivda

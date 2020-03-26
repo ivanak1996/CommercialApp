@@ -7,24 +7,35 @@ import androidx.annotation.NonNull;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.room.TypeConverters;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlace;
 import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlaceDao;
+import com.example.commercialapp.roomDatabase.orders.Order;
+import com.example.commercialapp.roomDatabase.orders.OrderDao;
+import com.example.commercialapp.roomDatabase.products.Product;
+import com.example.commercialapp.roomDatabase.products.ProductDao;
 import com.example.commercialapp.roomDatabase.user.User;
 import com.example.commercialapp.roomDatabase.user.UserDao;
 
 
-@Database(entities = {User.class, DeliveryPlace.class}, version = 2, exportSchema = false)
+@Database(entities = {User.class, DeliveryPlace.class, Order.class, Product.class}, version = 5, exportSchema = false)
+@TypeConverters({Converters.class})
 public abstract class CommercialDatabase extends RoomDatabase {
 
     private static CommercialDatabase instance;
 
     public abstract UserDao userDao();
+
     public abstract DeliveryPlaceDao deliveryPlaceDao();
 
+    public abstract OrderDao orderDao();
+
+    public abstract ProductDao productDao();
+
     public static synchronized CommercialDatabase getInstance(Context context) {
-        if(instance == null) {
+        if (instance == null) {
             instance = Room.databaseBuilder(context.getApplicationContext(),
                     CommercialDatabase.class, "commercial_database")
                     .fallbackToDestructiveMigration()

@@ -15,6 +15,7 @@ import com.example.commercialapp.R;
 import com.example.commercialapp.adapters.ProductAdapter;
 import com.example.commercialapp.dialogs.AddProductDialogFragment;
 import com.example.commercialapp.models.*;
+import com.example.commercialapp.roomDatabase.products.Product;
 import com.example.commercialapp.roomDatabase.user.*;
 
 import java.util.*;
@@ -23,7 +24,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
 
     private RecyclerView productListRecyclerView;
     private ProductAdapter productListAdapter;
-    private List<ProductModel> productModels = new ArrayList<>();
+    private List<Product> productModels = new ArrayList<>();
 
     private Spinner productGroupSpinner;
     private List<ProductGroupModel> productGroupModels = new ArrayList<>();
@@ -47,7 +48,8 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         productListAdapter.setOnItemClickListener(new ProductAdapter.ProductAdapterItemClickListener() {
             @Override
             public void onAddItemClick(int position) {
-                DialogFragment newFragment = new AddProductDialogFragment(productListAdapter.getProduct(position));
+                Product product = productListAdapter.getProduct(position);
+                DialogFragment newFragment = new AddProductDialogFragment(ProductListFragment.this, product);
                 newFragment.show(getActivity().getSupportFragmentManager(), "missiles");
             }
         });
@@ -106,7 +108,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
 
     // search finished
     @Override
-    public void processFinish(List<ProductModel> models) {
+    public void processFinish(List<Product> models) {
         productModels = models;
         String selectedGroup = productGroupModels.get(productGroupSpinner.getSelectedItemPosition()).getA();
         productListAdapter.setProducts(filterListBySelectedGroup(selectedGroup));
@@ -131,9 +133,9 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         productGroupSpinner.setAdapter(spinnerArrayAdapter);
     }
 
-    private List<ProductModel> filterListBySelectedGroup(String selectedGroup) {
-        List<ProductModel> filteredProducts = new ArrayList<>();
-        for (ProductModel product : ProductListFragment.this.productModels) {
+    private List<Product> filterListBySelectedGroup(String selectedGroup) {
+        List<Product> filteredProducts = new ArrayList<>();
+        for (Product product : ProductListFragment.this.productModels) {
             if (selectedGroup.equals(product.getD())) {
                 filteredProducts.add(product);
             }
@@ -141,7 +143,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         return filteredProducts;
     }
 
-    private static class GetProductListFromApiAsyncTask extends AsyncTask<Void, Void, List<ProductModel>> {
+    private static class GetProductListFromApiAsyncTask extends AsyncTask<Void, Void, List<Product>> {
 
         private ProductListAsyncResponse delegate;
         private String username;
@@ -156,12 +158,12 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         }
 
         @Override
-        protected List<ProductModel> doInBackground(Void... voids) {
+        protected List<Product> doInBackground(Void... voids) {
             return JsonParser.getProductsFromApi(username, password, keyword);
         }
 
         @Override
-        protected void onPostExecute(List<ProductModel> productModels) {
+        protected void onPostExecute(List<Product> productModels) {
             delegate.processFinish(productModels);
         }
     }

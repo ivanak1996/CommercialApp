@@ -7,8 +7,8 @@ import androidx.room.PrimaryKey;
 public class DeliveryPlace {
 
     @PrimaryKey(autoGenerate = true)
-    private int rowId;
-    private int userRowId;
+    private long rowId;
+    private long userRowId;
 
     private String acName2;
     private String acAddress;
@@ -17,7 +17,7 @@ public class DeliveryPlace {
     private String acPost;
     private String acSubject;
 
-    public DeliveryPlace(int userRowId, String acName2, String acAddress, String acCity, String anQId, String acPost, String acSubject) {
+    public DeliveryPlace(long userRowId, String acName2, String acAddress, String acCity, String anQId, String acPost, String acSubject) {
         this.userRowId = userRowId;
         this.acName2 = acName2;
         this.acAddress = acAddress;
@@ -27,17 +27,17 @@ public class DeliveryPlace {
         this.acSubject = acSubject;
     }
 
-    public void setRowId(int rowId) {
+    public void setRowId(long rowId) {
         this.rowId = rowId;
     }
 
     // region getters
 
-    public int getRowId() {
+    public long getRowId() {
         return rowId;
     }
 
-    public int getUserRowId() {
+    public long getUserRowId() {
         return userRowId;
     }
 

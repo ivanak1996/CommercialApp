@@ -1,9 +1,9 @@
 package com.example.commercialapp.asyncResponses;
 
-import com.example.commercialapp.models.ProductModel;
+import com.example.commercialapp.roomDatabase.products.Product;
 
 import java.util.List;
 
 public interface ProductListAsyncResponse {
-    void processFinish(List<ProductModel> models);
+    void processFinish(List<Product> models);
 }
