@@ -11,7 +11,7 @@
         tools:layout="@layout/fragment_product_list"/>
 
     <fragment android:id="@+id/anotherFragment"
-        android:name="com.example.commercialapp.fragments.AnotherFragment"
+        android:name="com.example.commercialapp.fragments.OrderDetailsFragment"
         android:label="another"
-        tools:layout="@layout/fragment_another"/>
+        tools:layout="@layout/fragment_order_details"/>
 </navigation>

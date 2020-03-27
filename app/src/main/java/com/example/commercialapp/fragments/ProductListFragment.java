@@ -6,6 +6,7 @@ import android.widget.*;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.*;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.*;
 
@@ -13,9 +14,10 @@ import com.example.commercialapp.JsonParser;
 import com.example.commercialapp.asyncResponses.*;
 import com.example.commercialapp.R;
 import com.example.commercialapp.adapters.ProductAdapter;
-import com.example.commercialapp.dialogs.AddProductDialogFragment;
+import com.example.commercialapp.dialogs.ProductDialogFragment;
 import com.example.commercialapp.models.*;
 import com.example.commercialapp.roomDatabase.products.Product;
+import com.example.commercialapp.roomDatabase.products.ProductViewModel;
 import com.example.commercialapp.roomDatabase.user.*;
 
 import java.util.*;
@@ -24,7 +26,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
 
     private RecyclerView productListRecyclerView;
     private ProductAdapter productListAdapter;
-    private List<Product> productModels = new ArrayList<>();
+    private List<Product> resultProductList = new ArrayList<>();
 
     private Spinner productGroupSpinner;
     private List<ProductGroupModel> productGroupModels = new ArrayList<>();
@@ -34,6 +36,9 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
 
     private UserViewModel userViewModel;
     private User user;
+
+    private ProductViewModel productViewModel;
+    private List<Product> savedProductsList = new ArrayList<>();
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -49,7 +54,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
             @Override
             public void onAddItemClick(int position) {
                 Product product = productListAdapter.getProduct(position);
-                DialogFragment newFragment = new AddProductDialogFragment(ProductListFragment.this, product);
+                DialogFragment newFragment = new ProductDialogFragment(ProductListFragment.this, product);
                 newFragment.show(getActivity().getSupportFragmentManager(), "missiles");
             }
         });
@@ -60,6 +65,15 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         userViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
         userViewModel.getUser(this);
 
+        // get product information from db
+        productViewModel = ViewModelProviders.of(this).get(ProductViewModel.class);
+        productViewModel.getAllProductsInOpenedOrder().observe(ProductListFragment.this.getActivity(), new Observer<List<Product>>() {
+            @Override
+            public void onChanged(List<Product> products) {
+                savedProductsList = products;
+                productListAdapter.notifyDataSetChanged();
+            }
+        });
 
         // search bar
         SearchView searchView = view.findViewById(R.id.search_view_products);
@@ -82,10 +96,6 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         productGroupSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0) {
-                    productListAdapter.setProducts(productModels);
-                    return;
-                }
                 String selectedGroup = productGroupModels.get(position).getA();
                 productListAdapter.setProducts(filterListBySelectedGroup(selectedGroup));
             }
@@ -109,7 +119,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
     // search finished
     @Override
     public void processFinish(List<Product> models) {
-        productModels = models;
+        resultProductList = setResults(models);
         String selectedGroup = productGroupModels.get(productGroupSpinner.getSelectedItemPosition()).getA();
         productListAdapter.setProducts(filterListBySelectedGroup(selectedGroup));
     }
@@ -134,12 +144,37 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
     }
 
     private List<Product> filterListBySelectedGroup(String selectedGroup) {
+
+        if (selectedGroup.isEmpty())
+            return ProductListFragment.this.resultProductList;
+
         List<Product> filteredProducts = new ArrayList<>();
-        for (Product product : ProductListFragment.this.productModels) {
+        for (Product product : ProductListFragment.this.resultProductList) {
             if (selectedGroup.equals(product.getD())) {
                 filteredProducts.add(product);
             }
         }
+        return filteredProducts;
+    }
+
+    private List<Product> setResults(List<Product> results) {
+
+        List<Product> filteredProducts = new ArrayList<>();
+
+        for (Product product : results) {
+            boolean savedProductFound = false;
+            for (Product savedProduct : savedProductsList) {
+                if (savedProduct.getB().equals(product.getB())) {
+                    filteredProducts.add(savedProduct);
+                    savedProductFound = true;
+                    break;
+                }
+            }
+            if (savedProductFound == false) {
+                filteredProducts.add(product);
+            }
+        }
+
         return filteredProducts;
     }
 

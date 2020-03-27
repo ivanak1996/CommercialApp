@@ -31,4 +31,7 @@ public interface ProductDao {
     @Query("select * from products_table")
     LiveData<List<Product>> getAllProducts();
 
+    @Query("select * from products_table where (orderRowId = (select rowId from orders_table where status = 0))")
+    LiveData<List<Product>> getAllProductsForOpenedOrder();
+
 }

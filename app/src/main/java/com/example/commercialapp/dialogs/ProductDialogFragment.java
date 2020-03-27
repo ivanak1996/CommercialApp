@@ -28,29 +28,23 @@ import com.example.commercialapp.roomDatabase.products.ProductViewModel;
 
 import java.util.Date;
 
-public class AddProductDialogFragment extends DialogFragment {
+public class ProductDialogFragment extends DialogFragment {
 
-    public interface AddProductDialogListener extends GetOpenedOrderAsyncResponse, InsertOrderAsyncResponse {
-        void onDialogPositiveClick(DialogFragment dialog);
-
-        void onDialogNegativeClick(DialogFragment dialog);
+    public interface ProductDialogListener extends GetOpenedOrderAsyncResponse, InsertOrderAsyncResponse, DialogListener {
     }
 
-    private EditText editTextQuantity;
-    private AddProductDialogListener listener;
-    private Product product;
-    private OrderViewModel orderViewModel;
-    private ProductViewModel productViewModel;
+    protected EditText editTextQuantity;
+    protected ProductDialogListener listener;
+    protected Product product;
+    protected OrderViewModel orderViewModel;
+    protected ProductViewModel productViewModel;
 
-    public AddProductDialogFragment(Fragment fragment, Product product) {
-        this.product = product;
-        orderViewModel = ViewModelProviders.of(fragment).get(OrderViewModel.class);
-        productViewModel = ViewModelProviders.of(fragment).get(ProductViewModel.class);
-        this.listener = new AddProductDialogListener() {
+    protected void setProductDialogListener() {
+        this.listener = new ProductDialogListener() {
 
             @Override
             public void insertOrderFinish(long id) {
-                productViewModel.insert(AddProductDialogFragment.this.product, id);
+                productViewModel.insert(ProductDialogFragment.this.product, id);
             }
 
             @Override
@@ -61,14 +55,14 @@ public class AddProductDialogFragment extends DialogFragment {
                     orderViewModel.insert(order, this);
                     return;
                 }
-                productViewModel.insert(AddProductDialogFragment.this.product, order.getRowId());
+                productViewModel.insert(ProductDialogFragment.this.product, order.getRowId());
             }
 
             @Override
             public void onDialogPositiveClick(DialogFragment dialog) {
 
                 int quantity = Integer.parseInt(editTextQuantity.getText().toString());
-                AddProductDialogFragment.this.product.setQuantity(quantity);
+                ProductDialogFragment.this.product.setQuantity(quantity);
                 orderViewModel.getOpenedOrder(this);
 
                 Toast toast = Toast.makeText(getContext(), "Product added", Toast.LENGTH_SHORT);
@@ -80,7 +74,13 @@ public class AddProductDialogFragment extends DialogFragment {
 
             }
         };
+    }
 
+    public ProductDialogFragment(Fragment fragment, Product product) {
+        this.product = product;
+        orderViewModel = ViewModelProviders.of(fragment).get(OrderViewModel.class);
+        productViewModel = ViewModelProviders.of(fragment).get(ProductViewModel.class);
+        setProductDialogListener();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -96,18 +96,19 @@ public class AddProductDialogFragment extends DialogFragment {
         TextView measurementTextView = dialogView.findViewById(R.id.dialog_textView_measurement);
         measurementTextView.setText(product.getE());
         editTextQuantity = dialogView.findViewById(R.id.dialog_edit_quantity);
+        editTextQuantity.setText("" + product.getQuantity());
 
-        builder.setMessage("message")
-                .setPositiveButton("positive", new DialogInterface.OnClickListener() {
+        builder.setMessage("Add item")
+                .setPositiveButton("ADD", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // Send the positive button event back to the host activity
-                        listener.onDialogPositiveClick(AddProductDialogFragment.this);
+                        listener.onDialogPositiveClick(ProductDialogFragment.this);
                     }
                 })
-                .setNegativeButton("negative", new DialogInterface.OnClickListener() {
+                .setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // Send the negative button event back to the host activity
-                        listener.onDialogNegativeClick(AddProductDialogFragment.this);
+                        listener.onDialogNegativeClick(ProductDialogFragment.this);
                     }
                 }).setView(dialogView);
         return builder.create();

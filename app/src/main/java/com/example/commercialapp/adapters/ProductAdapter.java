@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.commercialapp.JsonParser;
 import com.example.commercialapp.R;
 import com.example.commercialapp.roomDatabase.products.Product;
 
@@ -43,6 +44,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
         Product currentProduct = products.get(position);
         holder.textViewTitle.setText(currentProduct.getC());
         holder.textViewDescription.setText(currentProduct.getE());
+        holder.textViewQuantity.setText(
+                currentProduct.getOrderRowId() == JsonParser.ID_PRODUCT_NOT_SAVED
+                        ? "" : currentProduct.getQuantity() + " " + currentProduct.getE());
     }
 
     @Override
@@ -67,12 +71,14 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
     class ProductHolder extends RecyclerView.ViewHolder {
         private TextView textViewTitle;
         private TextView textViewDescription;
+        private TextView textViewQuantity;
         private ImageButton imageButtonAddItem;
 
         public ProductHolder(@NonNull View itemView, final ProductAdapterItemClickListener listener) {
             super(itemView);
             textViewTitle = itemView.findViewById(R.id.text_view_productName);
             textViewDescription = itemView.findViewById(R.id.text_view_productDescription);
+            textViewQuantity = itemView.findViewById(R.id.text_view_product_quantity);
             imageButtonAddItem = itemView.findViewById(R.id.image_button_add_item);
 
             imageButtonAddItem.setOnClickListener(new View.OnClickListener() {

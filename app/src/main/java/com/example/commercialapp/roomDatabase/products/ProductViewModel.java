@@ -15,11 +15,13 @@ public class ProductViewModel extends AndroidViewModel {
 
     private ProductRepository productRepository;
     private LiveData<List<Product>> allProducts;
+    private LiveData<List<Product>> allProductsInOpenedOrder;
 
     public ProductViewModel(@NonNull Application application) {
         super(application);
         productRepository = new ProductRepository(application);
         allProducts = productRepository.getAllProducts();
+        allProductsInOpenedOrder = productRepository.getAllProductsInOpenedOrder();
     }
 
     public LiveData<List<Product>> getAllProducts() {
@@ -43,4 +45,7 @@ public class ProductViewModel extends AndroidViewModel {
         return productRepository.getAllProductsForOrder(order.getRowId());
     }
 
+    public LiveData<List<Product>> getAllProductsInOpenedOrder() {
+        return allProductsInOpenedOrder;
+    }
 }

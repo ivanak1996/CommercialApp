@@ -12,11 +12,13 @@ public class ProductRepository {
 
     private ProductDao productDao;
     private LiveData<List<Product>> allProducts;
+    private LiveData<List<Product>> allProductsInOpenedOrder;
 
     public ProductRepository(Application application) {
         CommercialDatabase database = CommercialDatabase.getInstance(application);
         productDao = database.productDao();
         allProducts = productDao.getAllProducts();
+        allProductsInOpenedOrder = productDao.getAllProductsForOpenedOrder();
     }
 
     public LiveData<List<Product>> getAllProducts() {
@@ -54,4 +56,7 @@ public class ProductRepository {
         return productDao.getAllProductsForOrder(orderRowId);
     }
 
+    public LiveData<List<Product>> getAllProductsInOpenedOrder() {
+        return allProductsInOpenedOrder;
+    }
 }

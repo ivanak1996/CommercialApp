@@ -20,7 +20,7 @@ public class JsonParser {
 
     final static String TAG = "JsonParser.java";
     final static String API_URL = "http://89.216.122.162:8080/tkomserver/jsonData/api";
-
+    public final static int ID_PRODUCT_NOT_SAVED = -1;
     static JSONObject jObj = null;
     static String json = "";
 
@@ -148,7 +148,7 @@ public class JsonParser {
                     String r = o.getString("r");
                     String i = o.getString("i");
                     // TODO: edit this
-                    productModels.add(new Product(0, 1, a, b, c, d, e, f, v, p, r, i));
+                    productModels.add(new Product(ID_PRODUCT_NOT_SAVED, 1, a, b, c, d, e, f, v, p, r, i));
                 }
 
             } catch (JSONException e) {
