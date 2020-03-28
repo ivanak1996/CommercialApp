@@ -12,6 +12,12 @@
 
     <fragment android:id="@+id/anotherFragment"
         android:name="com.example.commercialapp.fragments.OrderDetailsFragment"
-        android:label="another"
+        android:label="order"
         tools:layout="@layout/fragment_order_details"/>
+
+    <fragment android:id="@+id/orderExtraFragment"
+        android:name="com.example.commercialapp.fragments.OrderExtraFragment"
+        android:label="additional info"
+        tools:layout="@layout/fragment_order_extra"/>
+
 </navigation>

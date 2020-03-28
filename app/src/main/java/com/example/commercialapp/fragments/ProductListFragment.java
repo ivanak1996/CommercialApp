@@ -44,6 +44,8 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_product_list, container, false);
 
+        setRetainInstance(true);
+
         // product list setup
         productListRecyclerView = view.findViewById(R.id.recycler_view_productsList);
         productListRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

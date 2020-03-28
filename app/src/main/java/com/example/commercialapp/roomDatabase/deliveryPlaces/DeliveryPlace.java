@@ -1,5 +1,6 @@
 package com.example.commercialapp.roomDatabase.deliveryPlaces;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -66,4 +67,11 @@ public class DeliveryPlace {
     }
 
     // endregion
+
+
+    @NonNull
+    @Override
+    public String toString() {
+        return acName2;
+    }
 }

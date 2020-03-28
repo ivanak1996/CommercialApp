@@ -48,7 +48,7 @@ public class SavedProductDialogFragment extends ProductDialogFragment {
             }
         });
 
-        builder.setMessage("Add item")
+        builder.setMessage(product.getC())
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // Send the positive button event back to the host activity

@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     android:gravity="center"
+    android:layout_margin="16dp"
     android:orientation="vertical">
 
     <!--<include
@@ -12,9 +13,10 @@
         layout="@layout/loading_screen" />-->
 
     <LinearLayout
+        android:layout_weight="10"
         android:id="@+id/order_details_list_loaded"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:orientation="vertical">
 
         <androidx.recyclerview.widget.RecyclerView
@@ -23,6 +25,18 @@
             android:layout_height="match_parent"
             tools:listitem="@layout/order_details_list_item"/>
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_weight="1"
+        android:gravity="bottom|right"
+        android:layout_width="match_parent"
+        android:layout_height="0dp">
+        <Button
+            android:id="@+id/button_next_order_details"
+            android:text="next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
     </LinearLayout>
 
 

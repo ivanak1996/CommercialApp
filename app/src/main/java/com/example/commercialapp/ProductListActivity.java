@@ -73,7 +73,7 @@ public class ProductListActivity extends AppCompatActivity implements Navigation
             case R.id.nav_products: {
                 // nav options to clear backstack
                 NavOptions navOptions = new NavOptions.Builder()
-                        .setPopUpTo(R.id.main, true)
+                        .setPopUpTo(R.id.main, false)
                         .build();
                 Navigation.findNavController(this, R.id.nav_host_fragment)
                         .navigate(R.id.productListScreenFragment, null, navOptions);
