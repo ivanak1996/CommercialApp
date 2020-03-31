@@ -148,7 +148,7 @@ public class JsonParser {
                     String r = o.getString("r");
                     String i = o.getString("i");
                     // TODO: edit this
-                    productModels.add(new Product(ID_PRODUCT_NOT_SAVED, 1, a, b, c, d, e, f, v, p, r, i));
+                    productModels.add(new Product(ID_PRODUCT_NOT_SAVED, 0, a, b, c, d, e, f, v, p, r, i));
                 }
 
             } catch (JSONException e) {

@@ -11,6 +11,7 @@ import androidx.navigation.ui.*;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+
 import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlaceViewModel;
 import com.example.commercialapp.roomDatabase.user.UserViewModel;
 import com.google.android.material.navigation.NavigationView;
@@ -19,6 +20,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ProductListActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    public static String KEY_ORDER_ID = "KEY_ORDER_ID";
 
     private UserViewModel userViewModel;
     private DeliveryPlaceViewModel deliveryPlaceViewModel;

@@ -19,8 +19,16 @@ import java.util.List;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductHolder> {
 
+
+
     public interface ProductAdapterItemClickListener {
-        void onAddItemClick(int position);
+        void onPlusClick(int position);
+
+        void onMinusClick(int position);
+
+        void onPlusLongClick(int position);
+
+        void onMinusLongClick(int Position);
     }
 
     public void setOnItemClickListener(ProductAdapterItemClickListener listener) {
@@ -41,11 +49,20 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
     @Override
     public void onBindViewHolder(@NonNull ProductHolder holder, int position) {
         Product currentProduct = products.get(position);
+        int quantity = currentProduct.getQuantity();
         holder.textViewTitle.setText(currentProduct.getC());
         holder.textViewDescription.setText(currentProduct.getE());
-        holder.textViewQuantity.setText(
-                currentProduct.getOrderRowId() == JsonParser.ID_PRODUCT_NOT_SAVED
-                        ? "" : currentProduct.getQuantity() + " " + currentProduct.getE());
+
+        if (quantity == 0) {
+            holder.imageButtonMinusItem.setVisibility(View.GONE);
+            holder.editTextProductQuantity.setVisibility(View.GONE);
+        } else {
+            holder.imageButtonMinusItem.setVisibility(View.VISIBLE);
+            holder.editTextProductQuantity.setVisibility(View.VISIBLE);
+            holder.editTextProductQuantity.setText(
+                    currentProduct.getOrderRowId() == JsonParser.ID_PRODUCT_NOT_SAVED
+                            ? "0" : quantity + "");
+        }
     }
 
     @Override
@@ -70,27 +87,68 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
     class ProductHolder extends RecyclerView.ViewHolder {
         private TextView textViewTitle;
         private TextView textViewDescription;
-        private TextView textViewQuantity;
-        private ImageButton imageButtonAddItem;
+        private ImageButton imageButtonPlusItem;
+        private ImageButton imageButtonMinusItem;
+        private TextView editTextProductQuantity;
 
         public ProductHolder(@NonNull View itemView, final ProductAdapterItemClickListener listener) {
             super(itemView);
             textViewTitle = itemView.findViewById(R.id.text_view_productName);
             textViewDescription = itemView.findViewById(R.id.text_view_productDescription);
-            textViewQuantity = itemView.findViewById(R.id.text_view_product_quantity);
-            imageButtonAddItem = itemView.findViewById(R.id.image_button_add_item);
+            imageButtonMinusItem = itemView.findViewById(R.id.image_button_minus_item);
+            imageButtonPlusItem = itemView.findViewById(R.id.image_button_plus_item);
+            editTextProductQuantity = itemView.findViewById(R.id.edit_text_quantity);
 
-            imageButtonAddItem.setOnClickListener(new View.OnClickListener() {
+            imageButtonPlusItem.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (listener != null) {
                         int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION) {
-                            listener.onAddItemClick(position);
+                            listener.onPlusClick(position);
                         }
                     }
                 }
             });
+
+            imageButtonPlusItem.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (listener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            listener.onPlusLongClick(position);
+                        }
+                    }
+                    return false;
+                }
+            });
+
+            imageButtonMinusItem.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (listener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            listener.onMinusClick(position);
+                        }
+                    }
+                }
+            });
+
+            imageButtonMinusItem.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (listener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            listener.onMinusLongClick(position);
+                        }
+                    }
+                    return false;
+                }
+            });
+
         }
     }
 

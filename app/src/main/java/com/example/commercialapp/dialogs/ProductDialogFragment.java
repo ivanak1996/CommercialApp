@@ -19,10 +19,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.example.commercialapp.R;
-import com.example.commercialapp.asyncResponses.GetOpenedOrderAsyncResponse;
-import com.example.commercialapp.asyncResponses.InsertOrderAsyncResponse;
-import com.example.commercialapp.roomDatabase.orders.Order;
-import com.example.commercialapp.roomDatabase.orders.OrderViewModel;
 import com.example.commercialapp.roomDatabase.products.Product;
 import com.example.commercialapp.roomDatabase.products.ProductViewModel;
 
@@ -30,40 +26,24 @@ import java.util.Date;
 
 public class ProductDialogFragment extends DialogFragment {
 
-    public interface ProductDialogListener extends GetOpenedOrderAsyncResponse, InsertOrderAsyncResponse, DialogListener {
+    public interface ProductDialogListener extends DialogListener {
     }
 
     protected EditText editTextQuantity;
     protected ProductDialogListener listener;
     protected Product product;
-    protected OrderViewModel orderViewModel;
     protected ProductViewModel productViewModel;
+    protected long orderRowId;
 
     protected void setProductDialogListener() {
         this.listener = new ProductDialogListener() {
-
-            @Override
-            public void insertOrderFinish(long id) {
-                productViewModel.insert(ProductDialogFragment.this.product, id);
-            }
-
-            @Override
-            public void getOpenedOrderFinish(Order resultOrder) {
-                Order order = resultOrder;
-                if (order == null) {
-                    order = new Order(Order.STATUS_OPEN, new Date(System.currentTimeMillis()));
-                    orderViewModel.insert(order, this);
-                    return;
-                }
-                productViewModel.insert(ProductDialogFragment.this.product, order.getRowId());
-            }
 
             @Override
             public void onDialogPositiveClick(DialogFragment dialog) {
 
                 int quantity = Integer.parseInt(editTextQuantity.getText().toString());
                 ProductDialogFragment.this.product.setQuantity(quantity);
-                orderViewModel.getOpenedOrder(this);
+                productViewModel.insert(ProductDialogFragment.this.product, orderRowId);
 
                 Toast toast = Toast.makeText(getContext(), "Product added", Toast.LENGTH_SHORT);
                 toast.show();
@@ -76,9 +56,9 @@ public class ProductDialogFragment extends DialogFragment {
         };
     }
 
-    public ProductDialogFragment(Fragment fragment, Product product) {
+    public ProductDialogFragment(Fragment fragment, Product product, long orderRowId) {
         this.product = product;
-        orderViewModel = ViewModelProviders.of(fragment).get(OrderViewModel.class);
+        this.orderRowId = orderRowId;
         productViewModel = ViewModelProviders.of(fragment).get(ProductViewModel.class);
         setProductDialogListener();
     }

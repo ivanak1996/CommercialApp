@@ -7,6 +7,7 @@ import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.*;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.*;
 
@@ -16,13 +17,15 @@ import com.example.commercialapp.R;
 import com.example.commercialapp.adapters.ProductAdapter;
 import com.example.commercialapp.dialogs.ProductDialogFragment;
 import com.example.commercialapp.models.*;
+import com.example.commercialapp.roomDatabase.orders.Order;
+import com.example.commercialapp.roomDatabase.orders.OrderViewModel;
 import com.example.commercialapp.roomDatabase.products.Product;
 import com.example.commercialapp.roomDatabase.products.ProductViewModel;
 import com.example.commercialapp.roomDatabase.user.*;
 
 import java.util.*;
 
-public class ProductListFragment extends Fragment implements ProductListAsyncResponse, GetUserFromDbAsyncResponse, ProductGroupsAsyncResponse {
+public class ProductListFragment extends Fragment implements ProductListAsyncResponse, GetUserFromDbAsyncResponse, ProductGroupsAsyncResponse, GetOpenedOrderAsyncResponse, InsertOrderAsyncResponse {
 
     private RecyclerView productListRecyclerView;
     private ProductAdapter productListAdapter;
@@ -40,11 +43,18 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
     private ProductViewModel productViewModel;
     private List<Product> savedProductsList = new ArrayList<>();
 
+    private OrderViewModel orderViewModel;
+    private long openedOrderId;
+
+    private TextView noDataInRecyclerView;
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_product_list, container, false);
 
         setRetainInstance(true);
+
+        noDataInRecyclerView = view.findViewById(R.id.empty_view);
 
         // product list setup
         productListRecyclerView = view.findViewById(R.id.recycler_view_productsList);
@@ -54,10 +64,37 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         productListAdapter = new ProductAdapter();
         productListAdapter.setOnItemClickListener(new ProductAdapter.ProductAdapterItemClickListener() {
             @Override
-            public void onAddItemClick(int position) {
+            public void onPlusClick(int position) {
                 Product product = productListAdapter.getProduct(position);
-                DialogFragment newFragment = new ProductDialogFragment(ProductListFragment.this, product);
-                newFragment.show(getActivity().getSupportFragmentManager(), "missiles");
+                product.setQuantity(product.getQuantity() + 1);
+                productViewModel.insert(product, openedOrderId);
+            }
+
+            @Override
+            public void onMinusClick(int position) {
+                Product product = productListAdapter.getProduct(position);
+                int quantity = product.getQuantity();
+                if (quantity <= 1) {
+                    product.setQuantity(0);
+                    productViewModel.delete(product);
+                } else {
+                    product.setQuantity(quantity - 1);
+                    productViewModel.insert(product, openedOrderId);
+                }
+            }
+
+            @Override
+            public void onPlusLongClick(int position) {
+                Product product = productListAdapter.getProduct(position);
+                DialogFragment newFragment = new ProductDialogFragment(ProductListFragment.this, product, openedOrderId);
+                newFragment.show(getActivity().getSupportFragmentManager(), "missiles2");
+            }
+
+            @Override
+            public void onMinusLongClick(int position) {
+                Product product = productListAdapter.getProduct(position);
+                product.setQuantity(0);
+                productViewModel.delete(product);
             }
         });
 
@@ -76,6 +113,10 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
                 productListAdapter.notifyDataSetChanged();
             }
         });
+
+        // get opened order into which the user shall add the items
+        orderViewModel = ViewModelProviders.of(this).get(OrderViewModel.class);
+        orderViewModel.getOpenedOrder(this);
 
         // search bar
         SearchView searchView = view.findViewById(R.id.search_view_products);
@@ -100,6 +141,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedGroup = productGroupModels.get(position).getA();
                 productListAdapter.setProducts(filterListBySelectedGroup(selectedGroup));
+                refreshRecyclerViewAppearance();
             }
 
             @Override
@@ -124,6 +166,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         resultProductList = setResults(models);
         String selectedGroup = productGroupModels.get(productGroupSpinner.getSelectedItemPosition()).getA();
         productListAdapter.setProducts(filterListBySelectedGroup(selectedGroup));
+        refreshRecyclerViewAppearance();
     }
 
     // user has been loaded from db
@@ -178,6 +221,32 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         }
 
         return filteredProducts;
+    }
+
+    private void refreshRecyclerViewAppearance() {
+        if(productListAdapter.getItemCount() == 0) {
+            productListRecyclerView.setVisibility(View.GONE);
+            noDataInRecyclerView.setVisibility(View.VISIBLE);
+        } else {
+            productListRecyclerView.setVisibility(View.VISIBLE);
+            noDataInRecyclerView.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void getOpenedOrderFinish(Order resultOrder) {
+        Order order = resultOrder;
+        if (order == null) {
+            order = new Order(Order.STATUS_OPEN, new Date(System.currentTimeMillis()));
+            orderViewModel.insert(order, this);
+        } else {
+            openedOrderId = resultOrder.getRowId();
+        }
+    }
+
+    @Override
+    public void insertOrderFinish(long id) {
+        this.openedOrderId = id;
     }
 
     private static class GetProductListFromApiAsyncTask extends AsyncTask<Void, Void, List<Product>> {

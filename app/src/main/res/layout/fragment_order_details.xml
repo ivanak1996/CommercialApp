@@ -4,7 +4,6 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     android:gravity="center"
-    android:layout_margin="16dp"
     android:orientation="vertical">
 
     <!--<include
@@ -23,7 +22,15 @@
             android:id="@+id/recycler_view_order_details"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:listitem="@layout/order_details_list_item"/>
+            tools:listitem="@layout/product_list_item"/>
+
+        <TextView
+            android:id="@+id/empty_view"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Basket is empty" />
 
     </LinearLayout>
 
