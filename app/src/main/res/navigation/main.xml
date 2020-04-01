@@ -7,7 +7,7 @@
 
     <fragment android:id="@+id/productListScreenFragment"
         android:name="com.example.commercialapp.fragments.ProductListFragment"
-        android:label="product list"
+        android:label=""
         tools:layout="@layout/fragment_product_list"/>
 
     <fragment android:id="@+id/anotherFragment"

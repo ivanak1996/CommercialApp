@@ -78,7 +78,7 @@ public class ProductDialogFragment extends DialogFragment {
         editTextQuantity = dialogView.findViewById(R.id.dialog_edit_quantity);
         editTextQuantity.setText("" + product.getQuantity());
 
-        builder.setMessage("Add item")
+        builder.setMessage(product.getC())
                 .setPositiveButton("ADD", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // Send the positive button event back to the host activity

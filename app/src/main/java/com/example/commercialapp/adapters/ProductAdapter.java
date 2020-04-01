@@ -7,19 +7,21 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.commercialapp.JsonParser;
 import com.example.commercialapp.R;
+import com.example.commercialapp.dialogs.ProductDialogFragment;
+import com.example.commercialapp.fragments.ProductListFragment;
 import com.example.commercialapp.roomDatabase.products.Product;
+import com.example.commercialapp.roomDatabase.products.ProductViewModel;
 
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductHolder> {
-
-
 
     public interface ProductAdapterItemClickListener {
         void onPlusClick(int position);

@@ -10,6 +10,7 @@ import androidx.navigation.ui.*;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlaceViewModel;
@@ -21,13 +22,13 @@ import java.util.Set;
 
 public class ProductListActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    public static String KEY_ORDER_ID = "KEY_ORDER_ID";
-
     private UserViewModel userViewModel;
     private DeliveryPlaceViewModel deliveryPlaceViewModel;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private AppBarConfiguration appBarConfiguration;
+
+    private long previousDrawerItemClicked = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,30 +69,28 @@ public class ProductListActivity extends AppCompatActivity implements Navigation
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-            case R.id.nav_logout: {
-                logout();
-                break;
-            }
-            case R.id.nav_products: {
-                // nav options to clear backstack
-                NavOptions navOptions = new NavOptions.Builder()
-                        .setPopUpTo(R.id.main, false)
-                        .build();
-                Navigation.findNavController(this, R.id.nav_host_fragment)
-                        .navigate(R.id.productListScreenFragment, null, navOptions);
-                break;
-            }
-            case R.id.nav_orders: {
-
-                NavOptions navOptions = new NavOptions.Builder()
-                        .setPopUpTo(R.id.main, true)
-                        .build();
-                Navigation.findNavController(this, R.id.nav_host_fragment)
-                        .navigate(R.id.anotherFragment, null, navOptions);
-                break;
+        if (menuItem.getItemId() != previousDrawerItemClicked) {
+            switch (menuItem.getItemId()) {
+                case R.id.nav_logout: {
+                    logout();
+                    break;
+                }
+                case R.id.nav_products: {
+                    // nav options to clear backstack
+                    NavOptions navOptions = new NavOptions.Builder()
+                            .setPopUpTo(R.id.main, false)
+                            .build();
+                    Navigation.findNavController(this, R.id.nav_host_fragment)
+                            .navigate(R.id.productListScreenFragment, null, navOptions);
+                    break;
+                }
+                case R.id.nav_orders: {
+                    // TODO: orders history shall be here
+                    break;
+                }
             }
         }
+        previousDrawerItemClicked = menuItem.getItemId();
         menuItem.setChecked(true);
         drawerLayout.closeDrawer(GravityCompat.START);
         return false;
@@ -99,7 +98,6 @@ public class ProductListActivity extends AppCompatActivity implements Navigation
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         switch (item.getItemId()) {
             case android.R.id.home:
                 if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -108,9 +106,23 @@ public class ProductListActivity extends AppCompatActivity implements Navigation
                 } else {
                     return false;
                 }
+            case R.id.action_chart: {
+                // go to chart
+                Navigation.findNavController(this, R.id.nav_host_fragment)
+                        .navigate(R.id.anotherFragment);
+                break;
+            }
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.chart_menu, menu);
+        return true;
     }
 
     @Override

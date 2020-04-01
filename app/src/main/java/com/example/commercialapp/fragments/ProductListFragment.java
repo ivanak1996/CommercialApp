@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.*;
 
 import com.example.commercialapp.JsonParser;
+import com.example.commercialapp.ProductListActivity;
 import com.example.commercialapp.asyncResponses.*;
 import com.example.commercialapp.R;
 import com.example.commercialapp.adapters.ProductAdapter;
@@ -81,6 +82,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
                     product.setQuantity(quantity - 1);
                     productViewModel.insert(product, openedOrderId);
                 }
+                productListAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -95,6 +97,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
                 Product product = productListAdapter.getProduct(position);
                 product.setQuantity(0);
                 productViewModel.delete(product);
+                productListAdapter.notifyDataSetChanged();
             }
         });
 
@@ -142,6 +145,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
                 String selectedGroup = productGroupModels.get(position).getA();
                 productListAdapter.setProducts(filterListBySelectedGroup(selectedGroup));
                 refreshRecyclerViewAppearance();
+                ((ProductListActivity) getActivity()).getSupportActionBar().setTitle(selectedGroup);
             }
 
             @Override
@@ -224,7 +228,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
     }
 
     private void refreshRecyclerViewAppearance() {
-        if(productListAdapter.getItemCount() == 0) {
+        if (productListAdapter.getItemCount() == 0) {
             productListRecyclerView.setVisibility(View.GONE);
             noDataInRecyclerView.setVisibility(View.VISIBLE);
         } else {

@@ -120,6 +120,8 @@ public class OrderDetailsFragment extends Fragment implements GetOpenedOrderAsyn
         return view;
     }
 
+
+
     @Override
     public void getOpenedOrderFinish(Order order) {
         this.orderId = order.getRowId();
