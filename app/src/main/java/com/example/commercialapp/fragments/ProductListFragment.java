@@ -7,7 +7,6 @@ import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.*;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.*;
 
@@ -16,13 +15,13 @@ import com.example.commercialapp.ProductListActivity;
 import com.example.commercialapp.asyncResponses.*;
 import com.example.commercialapp.R;
 import com.example.commercialapp.adapters.ProductAdapter;
-import com.example.commercialapp.dialogs.ProductDialogFragment;
 import com.example.commercialapp.models.*;
 import com.example.commercialapp.roomDatabase.orders.Order;
 import com.example.commercialapp.roomDatabase.orders.OrderViewModel;
 import com.example.commercialapp.roomDatabase.products.Product;
 import com.example.commercialapp.roomDatabase.products.ProductViewModel;
 import com.example.commercialapp.roomDatabase.user.*;
+import com.example.commercialapp.utils.ProductKeyboard;
 
 import java.util.*;
 
@@ -49,6 +48,11 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
 
     private TextView noDataInRecyclerView;
 
+    private LinearLayout keyboardLayout;
+    private ProductKeyboard keyboard;
+
+    private Product selectedProduct;
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_product_list, container, false);
@@ -65,39 +69,18 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         productListAdapter = new ProductAdapter();
         productListAdapter.setOnItemClickListener(new ProductAdapter.ProductAdapterItemClickListener() {
             @Override
-            public void onPlusClick(int position) {
-                Product product = productListAdapter.getProduct(position);
-                product.setQuantity(product.getQuantity() + 1);
-                productViewModel.insert(product, openedOrderId);
-            }
-
-            @Override
-            public void onMinusClick(int position) {
-                Product product = productListAdapter.getProduct(position);
-                int quantity = product.getQuantity();
-                if (quantity <= 1) {
-                    product.setQuantity(0);
-                    productViewModel.delete(product);
+            public void onClick(int position) {
+                Product clickedProduct = productListAdapter.getProduct(position);
+                if (selectedProduct == null || selectedProduct != clickedProduct) {
+                    selectedProduct = clickedProduct;
+                    keyboardLayout.setVisibility(View.VISIBLE);
+                    keyboard.saveProductState(productViewModel, openedOrderId);
+                    keyboard.setProduct(selectedProduct);
                 } else {
-                    product.setQuantity(quantity - 1);
-                    productViewModel.insert(product, openedOrderId);
+                    selectedProduct = null;
+                    keyboard.saveProductState(productViewModel, openedOrderId);
+                    keyboardLayout.setVisibility(View.GONE);
                 }
-                productListAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onPlusLongClick(int position) {
-                Product product = productListAdapter.getProduct(position);
-                DialogFragment newFragment = new ProductDialogFragment(ProductListFragment.this, product, openedOrderId);
-                newFragment.show(getActivity().getSupportFragmentManager(), "missiles2");
-            }
-
-            @Override
-            public void onMinusLongClick(int position) {
-                Product product = productListAdapter.getProduct(position);
-                product.setQuantity(0);
-                productViewModel.delete(product);
-                productListAdapter.notifyDataSetChanged();
             }
         });
 
@@ -156,13 +139,23 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
 
         // preview loading screen while user data from db is being awaited
         loading = view.findViewById(R.id.product_list_loading);
-        loaded = view.findViewById(R.id.product_list_loading);
+        loaded = view.findViewById(R.id.product_list_loaded);
         loading.setVisibility(View.VISIBLE);
         loaded.setVisibility(View.GONE);
+
+        // keyboard setup
+        keyboardLayout = view.findViewById(R.id.layout_keyboard);
+        keyboard = new ProductKeyboard(getContext(), keyboardLayout);
+        //keyboardLayout.setVisibility(View.VISIBLE);
 
         return view;
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        this.keyboard.saveProductState(productViewModel, openedOrderId);
+    }
 
     // search finished
     @Override

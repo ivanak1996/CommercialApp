@@ -40,48 +40,6 @@
 
         </LinearLayout>
 
-        <RelativeLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="horizontal">
-
-            <ImageButton
-                android:id="@+id/image_button_minus_item"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_toLeftOf="@id/edit_text_quantity"
-                android:backgroundTint="@android:color/transparent"
-                android:src="@drawable/ic_remove_circle"
-                android:tint="@color/colorAccent" />
-
-            <TextView
-                android:id="@+id/edit_text_quantity"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_gravity="center"
-                android:layout_toLeftOf="@id/image_button_plus_item"
-                android:inputType="number"
-                android:minEms="2"
-                android:text="2"
-                android:textAlignment="center" />
-
-
-            <ImageButton
-                android:id="@+id/image_button_plus_item"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_gravity="right"
-                android:backgroundTint="@android:color/transparent"
-                android:src="@drawable/ic_add_circle"
-                android:tint="@color/colorAccent" />
-
-        </RelativeLayout>
-
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

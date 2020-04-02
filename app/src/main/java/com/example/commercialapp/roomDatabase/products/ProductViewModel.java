@@ -29,8 +29,12 @@ public class ProductViewModel extends AndroidViewModel {
     }
 
     public void insert(Product product, long orderRowId) {
-        product.setOrderRowId(orderRowId);
-        productRepository.insert(product);
+        if (product.getQuantity() == 0) {
+            productRepository.delete(product);
+        } else {
+            product.setOrderRowId(orderRowId);
+            productRepository.insert(product);
+        }
     }
 
     public void update(Product product) {
