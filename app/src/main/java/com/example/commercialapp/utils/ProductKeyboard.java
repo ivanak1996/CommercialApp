@@ -159,7 +159,7 @@ public class ProductKeyboard {
             public void onClick(View v) {
                 if (product != null) {
                     product.setQuantity(0);
-                    resultTextView.setText("");
+                    resultTextView.setText("0");
                 }
             }
         });
