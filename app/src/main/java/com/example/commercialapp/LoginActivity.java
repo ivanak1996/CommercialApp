@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.example.commercialapp.asyncResponses.AsyncResponse;
+import com.example.commercialapp.asyncResponses.GetUserFromDbAsyncResponse;
 import com.example.commercialapp.models.LoginUserResult;
 import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlace;
 import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlaceViewModel;
@@ -28,11 +29,10 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        try
-        {
+        try {
             this.getSupportActionBar().hide();
+        } catch (NullPointerException e) {
         }
-        catch (NullPointerException e){}
         setContentView(R.layout.activity_login);
 
         TextView messageTextView = findViewById(R.id.text_view_message);
@@ -62,20 +62,23 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
 
             // save to db
             userViewModel.insert(user);
-            for(DeliveryPlace place: places) {
+            for (DeliveryPlace place : places) {
                 deliveryPlaceViewModel.insert(place);
             }
 
             // proceed to next activity
             Intent intent = new Intent(this, ProductListActivity.class);
+            intent.putExtra(ProductListActivity.EXTRA_USER, user);
             startActivity(intent);
             finish();
+
         } else {
             // mark as error
             TextView messageTextView = findViewById(R.id.text_view_message);
             messageTextView.setText("Wrong username or password");
         }
     }
+
 
     private static class GetUserFromApiAsyncTask extends AsyncTask<Void, Void, LoginUserResult> {
 

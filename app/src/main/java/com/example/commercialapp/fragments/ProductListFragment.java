@@ -5,9 +5,11 @@ import android.view.*;
 import android.widget.*;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.*;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.*;
 
 import com.example.commercialapp.JsonParser;
@@ -21,23 +23,22 @@ import com.example.commercialapp.roomDatabase.orders.OrderViewModel;
 import com.example.commercialapp.roomDatabase.products.Product;
 import com.example.commercialapp.roomDatabase.products.ProductViewModel;
 import com.example.commercialapp.roomDatabase.user.*;
-import com.example.commercialapp.utils.ProductKeyboard;
 
 import java.util.*;
 
-public class ProductListFragment extends Fragment implements ProductListAsyncResponse, GetUserFromDbAsyncResponse, ProductGroupsAsyncResponse, GetOpenedOrderAsyncResponse, InsertOrderAsyncResponse {
+public class ProductListFragment extends Fragment implements ProductListAsyncResponse, ProductGroupsAsyncResponse, GetOpenedOrderAsyncResponse, InsertOrderAsyncResponse {
 
     private RecyclerView productListRecyclerView;
     private ProductAdapter productListAdapter;
     private List<Product> resultProductList = new ArrayList<>();
 
-    private Spinner productGroupSpinner;
+    private Spinner spinner;
     private List<ProductGroupModel> productGroupModels = new ArrayList<>();
 
     private LinearLayout loading;
     private LinearLayout loaded;
+    private LinearLayout productListWrapper;
 
-    private UserViewModel userViewModel;
     private User user;
 
     private ProductViewModel productViewModel;
@@ -47,11 +48,57 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
     private long openedOrderId;
 
     private TextView noDataInRecyclerView;
+    private TextView productCountTextView;
 
-    private LinearLayout keyboardLayout;
-    private ProductKeyboard keyboard;
+    public ProductListFragment() {
+        setHasOptionsMenu(true);
+    }
 
-    private Product selectedProduct;
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.chart_menu, menu);
+
+        MenuItem spinnerItem = menu.findItem(R.id.spinner);
+        spinner = (Spinner) spinnerItem.getActionView();
+        new GetProductGroupListFromApiAsyncTask(this, user.getEmail(), user.getPassword()).execute();
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selectedGroup = productGroupModels.get(position).getA();
+                productListAdapter.setProducts(filterListBySelectedGroup(selectedGroup));
+                productListAdapter.notifyDataSetChanged();
+                refreshRecyclerViewAppearance();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        MenuItem cartItem = menu.findItem(R.id.action_chart);
+        cartItem.setActionView(R.layout.layout_menu_chart);
+        View av = cartItem.getActionView();
+        productCountTextView = av.findViewById(R.id.actionbar_count);
+        if (savedProductsList.size() > 0)
+            productCountTextView.setText("" + savedProductsList.size());
+        av.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Navigation.findNavController(getActivity(), R.id.nav_host_fragment)
+                        .navigate(R.id.anotherFragment);
+            }
+        });
+
+        super.onCreateOptionsMenu(menu, inflater);
+    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -59,9 +106,11 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
 
         setRetainInstance(true);
 
-        noDataInRecyclerView = view.findViewById(R.id.empty_view);
+        noDataInRecyclerView = view.findViewById(R.id.empty_search_results);
 
         // product list setup
+        productListWrapper = view.findViewById(R.id.layout_productList);
+
         productListRecyclerView = view.findViewById(R.id.recycler_view_productsList);
         productListRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         productListRecyclerView.setHasFixedSize(true);
@@ -70,25 +119,13 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         productListAdapter.setOnItemClickListener(new ProductAdapter.ProductAdapterItemClickListener() {
             @Override
             public void onClick(int position) {
-                Product clickedProduct = productListAdapter.getProduct(position);
-                if (selectedProduct == null || selectedProduct != clickedProduct) {
-                    selectedProduct = clickedProduct;
-                    keyboardLayout.setVisibility(View.VISIBLE);
-                    keyboard.saveProductState(productViewModel, openedOrderId);
-                    keyboard.setProduct(selectedProduct);
-                } else {
-                    selectedProduct = null;
-                    keyboard.saveProductState(productViewModel, openedOrderId);
-                    keyboardLayout.setVisibility(View.GONE);
-                }
+                productListAdapter.chooseProduct(position, productViewModel, openedOrderId);
             }
         });
 
         productListRecyclerView.setAdapter(productListAdapter);
 
-        // get user data from database
-        userViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
-        userViewModel.getUser(this);
+        this.user = ((ProductListActivity) getActivity()).getUser();
 
         // get product information from db
         productViewModel = ViewModelProviders.of(this).get(ProductViewModel.class);
@@ -96,6 +133,15 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
             @Override
             public void onChanged(List<Product> products) {
                 savedProductsList = products;
+                if (productCountTextView != null) {
+                    int numberOfSavedProducts = savedProductsList.size();
+                    if (numberOfSavedProducts > 0) {
+                        productCountTextView.setText("" + numberOfSavedProducts);
+                    } else {
+                        productCountTextView.setText("");
+                    }
+                }
+                resultProductList = setResults(resultProductList);
                 productListAdapter.notifyDataSetChanged();
             }
         });
@@ -105,74 +151,52 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         orderViewModel.getOpenedOrder(this);
 
         // search bar
-        SearchView searchView = view.findViewById(R.id.search_view_products);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        final SearchView searchView = view.findViewById(R.id.search_view_products);
+        ImageView searchIcon = view.findViewById(R.id.imageView_search);
+        searchIcon.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
+            public void onClick(View v) {
+                String query = searchView.getQuery().toString();
+                setStateLoading();
                 new GetProductListFromApiAsyncTask(ProductListFragment.this, user.getEmail(), user.getPassword(), query).execute();
-                getActivity().getCurrentFocus().clearFocus();
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
             }
         });
 
-        // spinner for product group dropdown menu
-        productGroupSpinner = view.findViewById(R.id.spinner_productType);
-        productGroupSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedGroup = productGroupModels.get(position).getA();
-                productListAdapter.setProducts(filterListBySelectedGroup(selectedGroup));
-                refreshRecyclerViewAppearance();
-                ((ProductListActivity) getActivity()).getSupportActionBar().setTitle(selectedGroup);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
 
         // preview loading screen while user data from db is being awaited
         loading = view.findViewById(R.id.product_list_loading);
         loaded = view.findViewById(R.id.product_list_loaded);
-        loading.setVisibility(View.VISIBLE);
-        loaded.setVisibility(View.GONE);
-
-        // keyboard setup
-        keyboardLayout = view.findViewById(R.id.layout_keyboard);
-        keyboard = new ProductKeyboard(getContext(), keyboardLayout);
-        //keyboardLayout.setVisibility(View.VISIBLE);
+        loaded.setVisibility(View.VISIBLE);
+        loading.setVisibility(View.GONE);
 
         return view;
+    }
+
+    private void setStateLoading() {
+        loaded.setVisibility(View.GONE);
+        loading.setVisibility(View.VISIBLE);
+    }
+
+    private void setStateLoaded() {
+        loaded.setVisibility(View.VISIBLE);
+        loading.setVisibility(View.GONE);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        this.keyboard.saveProductState(productViewModel, openedOrderId);
+        productListAdapter.saveProductState(productViewModel, openedOrderId);
     }
 
     // search finished
     @Override
     public void processFinish(List<Product> models) {
         resultProductList = setResults(models);
-        String selectedGroup = productGroupModels.get(productGroupSpinner.getSelectedItemPosition()).getA();
+        String selectedGroup = productGroupModels.get(spinner.getSelectedItemPosition()).getA();
         productListAdapter.setProducts(filterListBySelectedGroup(selectedGroup));
+        productListAdapter.notifyDataSetChanged();
+        setStateLoaded();
         refreshRecyclerViewAppearance();
-    }
-
-    // user has been loaded from db
-    @Override
-    public void processFinish(User output) {
-        user = output;
-        new GetProductGroupListFromApiAsyncTask(this, user.getEmail(), user.getPassword()).execute();
-        loaded.setVisibility(View.VISIBLE);
-        loading.setVisibility(View.GONE);
     }
 
     // product groups have been fetched from api
@@ -182,7 +206,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         ArrayAdapter<ProductGroupModel> spinnerArrayAdapter = new ArrayAdapter<>
                 (getContext(), android.R.layout.simple_spinner_item, productGroups); //selected item will look like a spinner set from XML
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        productGroupSpinner.setAdapter(spinnerArrayAdapter);
+        spinner.setAdapter(spinnerArrayAdapter);
     }
 
     private List<Product> filterListBySelectedGroup(String selectedGroup) {
@@ -199,6 +223,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         return filteredProducts;
     }
 
+    // method that merges the non-db saved and saved product
     private List<Product> setResults(List<Product> results) {
 
         List<Product> filteredProducts = new ArrayList<>();
@@ -213,6 +238,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
                 }
             }
             if (savedProductFound == false) {
+                product.setQuantity(0);
                 filteredProducts.add(product);
             }
         }
@@ -222,10 +248,10 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
 
     private void refreshRecyclerViewAppearance() {
         if (productListAdapter.getItemCount() == 0) {
-            productListRecyclerView.setVisibility(View.GONE);
+            productListWrapper.setVisibility(View.GONE);
             noDataInRecyclerView.setVisibility(View.VISIBLE);
         } else {
-            productListRecyclerView.setVisibility(View.VISIBLE);
+            productListWrapper.setVisibility(View.VISIBLE);
             noDataInRecyclerView.setVisibility(View.GONE);
         }
     }

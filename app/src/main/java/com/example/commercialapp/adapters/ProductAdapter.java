@@ -1,21 +1,50 @@
 package com.example.commercialapp.adapters;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.commercialapp.R;
 import com.example.commercialapp.roomDatabase.products.Product;
+import com.example.commercialapp.roomDatabase.products.ProductViewModel;
+import com.example.commercialapp.utils.ProductKeyboard;
 
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductHolder> {
+
+    private Product selectedProduct = null;
+
+    public void saveProductState(ProductViewModel productViewModel, long orderId) {
+        if (selectedProduct != null)
+            productViewModel.insert(selectedProduct, orderId);
+    }
+
+    public void chooseProduct(int position, ProductViewModel productViewModel, long orderId) {
+        Product chosenProduct = products.get(position);
+
+        if (selectedProduct != null) {//if we need to commit changes in product count
+            saveProductState(productViewModel, orderId);
+            if (selectedProduct != chosenProduct) {
+                selectedProduct = chosenProduct;
+            } else {
+                selectedProduct = null;
+            }
+        } else {// if no other product has been in focus before click
+            selectedProduct = chosenProduct;
+        }
+
+        notifyDataSetChanged();
+    }
 
     public interface ProductAdapterItemClickListener {
         void onClick(int position);
@@ -40,7 +69,22 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
     public void onBindViewHolder(@NonNull ProductHolder holder, int position) {
         Product currentProduct = products.get(position);
         holder.textViewTitle.setText(currentProduct.getC());
-        holder.textViewDescription.setText(currentProduct.getE());
+
+        if (currentProduct.getQuantity() == 0) {
+            holder.textViewQuantity.setText("");
+        } else {
+            holder.textViewQuantity.setText("" + currentProduct.getQuantity() + " " + currentProduct.getE());
+        }
+
+        if (currentProduct == selectedProduct) {
+            holder.wrapper.setBackgroundColor(Color.rgb(229, 255, 204));
+            holder.keyboardLayout.setVisibility(View.VISIBLE);
+            holder.keyboardLayout.removeAllViews();
+            holder.keyboard = new ProductKeyboard(holder.keyboardLayout.getContext(), products.get(position), holder.keyboardLayout);
+        } else {
+            holder.keyboardLayout.setVisibility(View.GONE);
+            holder.wrapper.setBackgroundColor(Color.rgb(255, 255, 255));
+        }
     }
 
     @Override
@@ -50,7 +94,18 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
 
     public void setProducts(List<Product> products) {
         this.products = products;
-        notifyDataSetChanged();
+        if (selectedProduct != null) {
+            for (Product p : products) {
+                if (selectedProduct.getB().equals(p.getB())) {
+                    selectedProduct = p;
+                    return;
+                }
+            }
+            selectedProduct = null;
+        }
+
+        //this.selectedProduct = null;
+        //notifyDataSetChanged();
     }
 
     public Product getProduct(int position) {
@@ -63,13 +118,19 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
     }
 
     class ProductHolder extends RecyclerView.ViewHolder {
+
+        private CardView wrapper;
         private TextView textViewTitle;
-        private TextView textViewDescription;
+        private TextView textViewQuantity;
+        private LinearLayout keyboardLayout;
+        private ProductKeyboard keyboard;
 
         public ProductHolder(@NonNull View itemView, final ProductAdapterItemClickListener listener) {
             super(itemView);
+            wrapper = itemView.findViewById(R.id.cardview_wrapper);
             textViewTitle = itemView.findViewById(R.id.text_view_productName);
-            textViewDescription = itemView.findViewById(R.id.text_view_productDescription);
+            textViewQuantity = itemView.findViewById(R.id.text_view_productQuantity);
+            keyboardLayout = itemView.findViewById(R.id.item_keyboard);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

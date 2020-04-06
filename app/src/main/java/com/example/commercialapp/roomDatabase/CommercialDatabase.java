@@ -20,7 +20,7 @@ import com.example.commercialapp.roomDatabase.user.User;
 import com.example.commercialapp.roomDatabase.user.UserDao;
 
 
-@Database(entities = {User.class, DeliveryPlace.class, Order.class, Product.class}, version = 6, exportSchema = false)
+@Database(entities = {User.class, DeliveryPlace.class, Order.class, Product.class}, version = 7, exportSchema = false)
 @TypeConverters({Converters.class})
 public abstract class CommercialDatabase extends RoomDatabase {
 

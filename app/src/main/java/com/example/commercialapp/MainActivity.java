@@ -6,10 +6,12 @@ import androidx.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.example.commercialapp.asyncResponses.GetUserFromDbAsyncResponse;
 import com.example.commercialapp.asyncResponses.UsersCountAsyncResponse;
+import com.example.commercialapp.roomDatabase.user.User;
 import com.example.commercialapp.roomDatabase.user.UserViewModel;
 
-public class MainActivity extends AppCompatActivity implements UsersCountAsyncResponse {
+public class MainActivity extends AppCompatActivity implements GetUserFromDbAsyncResponse {
 
     private UserViewModel userViewModel;
 
@@ -19,18 +21,18 @@ public class MainActivity extends AppCompatActivity implements UsersCountAsyncRe
         setContentView(R.layout.activity_main);
 
         userViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
-        userViewModel.usersCount(this);
+        userViewModel.getUser(this);
     }
 
+
     @Override
-    public void processFinish(int output) {
-        if(output == 0) {
-            // go to login
+    public void processFinish(User output) {
+        if(output == null) {
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
         } else {
-            // go directly to products
             Intent intent = new Intent(this, ProductListActivity.class);
+            intent.putExtra(ProductListActivity.EXTRA_USER, output);
             startActivity(intent);
         }
         finish();

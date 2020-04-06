@@ -3,8 +3,10 @@ package com.example.commercialapp.roomDatabase.user;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import java.io.Serializable;
+
 @Entity(tableName = "user_table")
-public class User {
+public class User implements Serializable {
 
     @PrimaryKey(autoGenerate = true)
     private long rowId;

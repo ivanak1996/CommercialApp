@@ -2,10 +2,10 @@ package com.example.commercialapp.fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -13,7 +13,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,7 +23,6 @@ import com.example.commercialapp.roomDatabase.orders.Order;
 import com.example.commercialapp.roomDatabase.orders.OrderViewModel;
 import com.example.commercialapp.roomDatabase.products.Product;
 import com.example.commercialapp.roomDatabase.products.ProductViewModel;
-import com.example.commercialapp.utils.ProductKeyboard;
 
 import java.util.List;
 
@@ -37,15 +35,21 @@ public class OrderDetailsFragment extends Fragment implements GetOpenedOrderAsyn
     private long orderId;
     private TextView noDataInRecyclerView;
 
-    private LinearLayout keyboardLayout;
-    private ProductKeyboard keyboard;
-
-    private Product selectedProduct;
+    public OrderDetailsFragment() {
+        setHasOptionsMenu(true);
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.next_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -63,17 +67,7 @@ public class OrderDetailsFragment extends Fragment implements GetOpenedOrderAsyn
         productAdapter.setOnItemClickListener(new ProductAdapter.ProductAdapterItemClickListener() {
             @Override
             public void onClick(int position) {
-                Product clickedProduct = productAdapter.getProduct(position);
-                if (selectedProduct == null || selectedProduct != clickedProduct) {
-                    selectedProduct = clickedProduct;
-                    keyboardLayout.setVisibility(View.VISIBLE);
-                    keyboard.saveProductState(productViewModel, orderId);
-                    keyboard.setProduct(selectedProduct);
-                } else {
-                    selectedProduct = null;
-                    keyboard.saveProductState(productViewModel, orderId);
-                    keyboardLayout.setVisibility(View.GONE);
-                }
+                productAdapter.chooseProduct(position, productViewModel, orderId);
             }
         });
         productViewModel = ViewModelProviders.of(this).get(ProductViewModel.class);
@@ -81,6 +75,7 @@ public class OrderDetailsFragment extends Fragment implements GetOpenedOrderAsyn
             @Override
             public void onChanged(List<Product> products) {
                 productAdapter.setProducts(products);
+                productAdapter.notifyDataSetChanged();
                 refreshRecyclerViewAppearance();
             }
         });
@@ -90,27 +85,13 @@ public class OrderDetailsFragment extends Fragment implements GetOpenedOrderAsyn
         orderViewModel = ViewModelProviders.of(this).get(OrderViewModel.class);
         orderViewModel.getOpenedOrder(this);
 
-        Button nextButton = view.findViewById(R.id.button_next_order_details);
-        nextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Navigation.findNavController(getActivity(), R.id.nav_host_fragment)
-                        .navigate(R.id.orderExtraFragment);
-            }
-        });
-
-        // keyboard setup
-        keyboardLayout = view.findViewById(R.id.layout_keyboard);
-        keyboard = new ProductKeyboard(getContext(), keyboardLayout);
-
         return view;
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        this.keyboard.saveProductState(productViewModel, orderId);
+        productAdapter.saveProductState(productViewModel, orderId);
     }
 
     @Override

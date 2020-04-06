@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -25,51 +26,42 @@ public class ProductKeyboard {
 
     //private LinearLayout container;
 
-    private LinearLayout titleRow;
-    private TextView titleTextView;
-
     private LinearLayout firstRowContainer;
     private List<Button> numericButtons = new ArrayList<>();
-    private Button clearButton;
+    private Button decimalPointButton;
 
     private LinearLayout shortcutsContainer;
     private ImageButton minusButton;
     private ImageButton plusButton;
     private ImageButton xButton;
     private ImageButton infoButton;
+    private ImageButton deleteButton;
+
     private TextView resultTextView;
 
     private Product product = null;
 
-    public ProductKeyboard(final Context context, LinearLayout container) {
+    public ProductKeyboard(final Context context, Product product, LinearLayout container) {
         //this.container = container;
 
-        titleRowSetup(context);
+        this.product = product;
+
         firstRowSetup(context);
         secondRowSetup(context);
-        container.addView(titleRow);
         container.addView(firstRowContainer);
         container.addView(shortcutsContainer);
+
+        resultTextView.setText("" + product.getQuantity());
     }
 
-    public void setProduct(Product product) {
+    private void setProduct(Product product) {
         this.product = product;
-        titleTextView.setText(product.getC());
         resultTextView.setText("" + product.getQuantity());
-
     }
 
     public void saveProductState(ProductViewModel productViewModel, long orderId) {
         if (product != null)
             productViewModel.insert(product, orderId);
-    }
-
-    private void titleRowSetup(Context context) {
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-        titleRow = new LinearLayout(context);
-        titleTextView = generateTextView(context);
-        titleTextView.setText("Title");
-        titleRow.addView(titleTextView);
     }
 
     private void secondRowSetup(Context context) {
@@ -84,6 +76,7 @@ public class ProductKeyboard {
         plusButton = generateImageButton(context, R.drawable.ic_add_circle);
         xButton = generateImageButton(context, R.drawable.ic_multi);
         infoButton = generateImageButton(context, R.drawable.ic_info);
+        deleteButton = generateImageButton(context, R.drawable.ic_delete);
 
         minusButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -118,6 +111,17 @@ public class ProductKeyboard {
             }
         });
 
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (product != null) {
+                    product.setQuantity(0);
+                    resultTextView.setText("0");
+                }
+            }
+        });
+
+        shortcutsContainer.addView(deleteButton);
         shortcutsContainer.addView(minusButton);
         shortcutsContainer.addView(resultTextView);
         shortcutsContainer.addView(plusButton);
@@ -152,23 +156,22 @@ public class ProductKeyboard {
             firstRowContainer.addView(button);
         }
 
-        // add clear button
-        clearButton = generateNewButton(context, "X");
-        clearButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (product != null) {
-                    product.setQuantity(0);
-                    resultTextView.setText("0");
+        if (product.getE().equals("KG")) {
+            // add clear button
+            decimalPointButton = generateNewButton(context, ".");
+            decimalPointButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // TODO
                 }
-            }
-        });
-        firstRowContainer.addView(clearButton);
+            });
+            firstRowContainer.addView(decimalPointButton);
+        }
     }
 
     private TextView generateTextView(Context context) {
         TextView textView = new TextView(context);
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, WRAP_CONTENT);
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, 180);
         p.weight = 1;
         textView.setLayoutParams(p);
         textView.setText("res");
@@ -177,10 +180,11 @@ public class ProductKeyboard {
 
     private ImageButton generateImageButton(Context context, int resourceId) {
         ImageButton imageButton = new ImageButton(context);
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, WRAP_CONTENT);
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, 180);
         p.weight = 1;
         imageButton.setLayoutParams(p);
         imageButton.setImageResource(resourceId);
+        imageButton.setScaleType(ImageView.ScaleType.FIT_CENTER);
         imageButton.setBackgroundColor(Color.TRANSPARENT);
         imageButton.setColorFilter(ContextCompat.getColor(context, R.color.colorAccent), android.graphics.PorterDuff.Mode.SRC_IN);
         return imageButton;
@@ -190,6 +194,8 @@ public class ProductKeyboard {
         Button button = new Button(context);
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, WRAP_CONTENT);
         p.weight = 1;
+        p.leftMargin = -12;
+        p.rightMargin = -12;
         button.setLayoutParams(p);
         button.setText(label);
         return button;

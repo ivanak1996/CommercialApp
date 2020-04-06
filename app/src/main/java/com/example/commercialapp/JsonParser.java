@@ -110,7 +110,6 @@ public class JsonParser {
 
     }
 
-
     public static List<Product> getProductsFromApi(String userEmail, String userPassword, String keyword) {
 
         ArrayList<Product> productModels = new ArrayList<>();

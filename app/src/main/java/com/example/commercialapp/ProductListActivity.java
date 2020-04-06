@@ -10,10 +10,10 @@ import androidx.navigation.ui.*;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlaceViewModel;
+import com.example.commercialapp.roomDatabase.user.User;
 import com.example.commercialapp.roomDatabase.user.UserViewModel;
 import com.google.android.material.navigation.NavigationView;
 
@@ -22,11 +22,14 @@ import java.util.Set;
 
 public class ProductListActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
+    public static final String EXTRA_USER = "EXTRA_USER";
+
     private UserViewModel userViewModel;
     private DeliveryPlaceViewModel deliveryPlaceViewModel;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private AppBarConfiguration appBarConfiguration;
+    private User user;
 
     private long previousDrawerItemClicked = -1;
 
@@ -40,8 +43,15 @@ public class ProductListActivity extends AppCompatActivity implements Navigation
         userViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
         deliveryPlaceViewModel = ViewModelProviders.of(this).get(DeliveryPlaceViewModel.class);
 
+        Intent caller = getIntent();
+        this.user = (User) caller.getSerializableExtra(EXTRA_USER);
+
         init();
 
+    }
+
+    public User getUser() {
+        return user;
     }
 
     private void init() {
@@ -112,18 +122,15 @@ public class ProductListActivity extends AppCompatActivity implements Navigation
                         .navigate(R.id.anotherFragment);
                 break;
             }
+            case R.id.action_next: {
+                Navigation.findNavController(this, R.id.nav_host_fragment)
+                        .navigate(R.id.orderExtraFragment);
+            }
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.chart_menu, menu);
-        return true;
-    }
 
     @Override
     public boolean onSupportNavigateUp() {
