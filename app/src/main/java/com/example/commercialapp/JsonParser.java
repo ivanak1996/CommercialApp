@@ -110,7 +110,7 @@ public class JsonParser {
 
     }
 
-    public static List<Product> getProductsFromApi(String userEmail, String userPassword, String keyword) {
+    public static List<Product> getProductsFromApi(String userEmail, String userPassword, String keyword, String classif, int fromRows, int toRows) {
 
         ArrayList<Product> productModels = new ArrayList<>();
 
@@ -119,11 +119,15 @@ public class JsonParser {
         String query;
 
         try {
-            query = String.format("userEmail=%s&userPass=%s&action=%s&data=%%25%s%%25",
+            query = String.format("userEmail=%s&userPass=%s&action=%s&data=%%25%s%%25&classif=%s&fromRows=%s&toRows=%s",
                     URLEncoder.encode(userEmail, charset),
                     URLEncoder.encode(userPassword, charset),
                     URLEncoder.encode(action, charset),
-                    URLEncoder.encode(keyword, charset));
+                    URLEncoder.encode(keyword, charset),
+                    URLEncoder.encode(classif, charset),
+                    URLEncoder.encode("" + fromRows, charset),
+                    URLEncoder.encode("" + toRows, charset)
+            );
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             return productModels;

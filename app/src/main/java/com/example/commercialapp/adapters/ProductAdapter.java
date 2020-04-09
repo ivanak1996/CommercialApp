@@ -92,6 +92,11 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
         return products.size();
     }
 
+    public void addProducts(List<Product> products) {
+        this.products.addAll(products);
+        notifyDataSetChanged();
+    }
+
     public void setProducts(List<Product> products) {
         this.products = products;
         if (selectedProduct != null) {
@@ -103,7 +108,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
             }
             selectedProduct = null;
         }
-
+        notifyDataSetChanged();
         //this.selectedProduct = null;
         //notifyDataSetChanged();
     }

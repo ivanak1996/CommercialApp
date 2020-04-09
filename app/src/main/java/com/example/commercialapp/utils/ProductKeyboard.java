@@ -1,10 +1,9 @@
 package com.example.commercialapp.utils;
 
 import android.content.Context;
-import android.graphics.Color;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -18,6 +17,7 @@ import com.example.commercialapp.roomDatabase.products.ProductViewModel;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.view.ViewGroup.LayoutParams.FILL_PARENT;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
@@ -31,11 +31,11 @@ public class ProductKeyboard {
     private Button decimalPointButton;
 
     private LinearLayout shortcutsContainer;
-    private ImageButton minusButton;
-    private ImageButton plusButton;
-    private ImageButton xButton;
-    private ImageButton infoButton;
-    private ImageButton deleteButton;
+    private ImageView minusButton;
+    private ImageView plusButton;
+    private ImageView xButton;
+    private ImageView infoButton;
+    private ImageView deleteButton;
 
     private TextView resultTextView;
 
@@ -66,10 +66,11 @@ public class ProductKeyboard {
 
     private void secondRowSetup(Context context) {
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(MATCH_PARENT, 0);
-        p.weight = 1;
+        p.weight = 2;
         shortcutsContainer = new LinearLayout(context);
         shortcutsContainer.setLayoutParams(p);
         shortcutsContainer.setOrientation(LinearLayout.HORIZONTAL);
+        shortcutsContainer.setGravity(Gravity.CENTER_VERTICAL);
 
         minusButton = generateImageButton(context, R.drawable.ic_remove_circle);
         resultTextView = generateTextView(context);
@@ -132,7 +133,7 @@ public class ProductKeyboard {
 
     private void firstRowSetup(Context context) {
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(MATCH_PARENT, 0);
-        p.weight = 1;
+        p.weight = 3;
         firstRowContainer = new LinearLayout(context);
         firstRowContainer.setLayoutParams(p);
         firstRowContainer.setOrientation(LinearLayout.HORIZONTAL);
@@ -175,27 +176,28 @@ public class ProductKeyboard {
         p.weight = 1;
         textView.setLayoutParams(p);
         textView.setText("res");
+        textView.setTextSize(20.0f);
+        textView.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
         return textView;
     }
 
-    private ImageButton generateImageButton(Context context, int resourceId) {
-        ImageButton imageButton = new ImageButton(context);
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, 180);
+    private ImageView generateImageButton(Context context, int resourceId) {
+        ImageView imageButton = new ImageView(context);
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, FILL_PARENT);
         p.weight = 1;
         imageButton.setLayoutParams(p);
         imageButton.setImageResource(resourceId);
         imageButton.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        imageButton.setBackgroundColor(Color.TRANSPARENT);
         imageButton.setColorFilter(ContextCompat.getColor(context, R.color.colorAccent), android.graphics.PorterDuff.Mode.SRC_IN);
         return imageButton;
     }
 
     private Button generateNewButton(Context context, String label) {
         Button button = new Button(context);
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, WRAP_CONTENT);
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, FILL_PARENT);
         p.weight = 1;
-        p.leftMargin = -12;
-        p.rightMargin = -12;
+        p.leftMargin = -10;
+        p.rightMargin = -10;
         button.setLayoutParams(p);
         button.setText(label);
         return button;

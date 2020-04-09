@@ -28,12 +28,20 @@ import java.util.*;
 
 public class ProductListFragment extends Fragment implements ProductListAsyncResponse, ProductGroupsAsyncResponse, GetOpenedOrderAsyncResponse, InsertOrderAsyncResponse {
 
+    public static final int SEARCH_RESULTS_DEFAULT = 100;
+
     private RecyclerView productListRecyclerView;
     private ProductAdapter productListAdapter;
     private List<Product> resultProductList = new ArrayList<>();
 
     private Spinner spinner;
+    private int spinnerSelectedItemPosition = -1;
+
     private List<ProductGroupModel> productGroupModels = new ArrayList<>();
+
+    private int productsLoaded = 0;
+    private boolean moreToLoad = true;
+    private boolean isLoadingMore = false;
 
     private LinearLayout loading;
     private LinearLayout loaded;
@@ -49,6 +57,8 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
 
     private TextView noDataInRecyclerView;
     private TextView productCountTextView;
+
+    private LinearLayout loadingMoreItemsIndicator;
 
     public ProductListFragment() {
         setHasOptionsMenu(true);
@@ -71,10 +81,11 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedGroup = productGroupModels.get(position).getA();
-                productListAdapter.setProducts(filterListBySelectedGroup(selectedGroup));
-                productListAdapter.notifyDataSetChanged();
-                refreshRecyclerViewAppearance();
+                //String selectedGroup = productGroupModels.get(position).getA();
+                //productListAdapter.setProducts(filterListBySelectedGroup(selectedGroup));
+                //productListAdapter.notifyDataSetChanged();
+                //refreshRecyclerViewAppearance();
+                spinnerSelectedItemPosition = position;
             }
 
             @Override
@@ -101,12 +112,43 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        productListAdapter.setProducts(resultProductList);
+        //productListAdapter.notifyDataSetChanged();
+    }
+
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_product_list, container, false);
 
         setRetainInstance(true);
 
+        loadingMoreItemsIndicator = view.findViewById(R.id.list_item_loading);
+
         noDataInRecyclerView = view.findViewById(R.id.empty_search_results);
+
+        // search bar
+        final SearchView searchView = view.findViewById(R.id.search_view_products);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                search(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+        ImageView searchIcon = view.findViewById(R.id.imageView_search);
+        searchIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                search(searchView.getQuery().toString());
+            }
+        });
 
         // product list setup
         productListWrapper = view.findViewById(R.id.layout_productList);
@@ -114,6 +156,20 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         productListRecyclerView = view.findViewById(R.id.recycler_view_productsList);
         productListRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         productListRecyclerView.setHasFixedSize(true);
+
+        productListRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (!recyclerView.canScrollVertically(1)) {
+                    if (moreToLoad && !isLoadingMore) {
+                        isLoadingMore = true;
+                        searchExtra(searchView.getQuery().toString());
+                    }
+                }
+            }
+
+        });
 
         productListAdapter = new ProductAdapter();
         productListAdapter.setOnItemClickListener(new ProductAdapter.ProductAdapterItemClickListener() {
@@ -126,6 +182,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         productListRecyclerView.setAdapter(productListAdapter);
 
         this.user = ((ProductListActivity) getActivity()).getUser();
+
 
         // get product information from db
         productViewModel = ViewModelProviders.of(this).get(ProductViewModel.class);
@@ -142,25 +199,13 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
                     }
                 }
                 resultProductList = setResults(resultProductList);
-                productListAdapter.notifyDataSetChanged();
+                //productListAdapter.notifyDataSetChanged();
             }
         });
 
         // get opened order into which the user shall add the items
         orderViewModel = ViewModelProviders.of(this).get(OrderViewModel.class);
         orderViewModel.getOpenedOrder(this);
-
-        // search bar
-        final SearchView searchView = view.findViewById(R.id.search_view_products);
-        ImageView searchIcon = view.findViewById(R.id.imageView_search);
-        searchIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String query = searchView.getQuery().toString();
-                setStateLoading();
-                new GetProductListFromApiAsyncTask(ProductListFragment.this, user.getEmail(), user.getPassword(), query).execute();
-            }
-        });
 
 
         // preview loading screen while user data from db is being awaited
@@ -170,6 +215,22 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         loading.setVisibility(View.GONE);
 
         return view;
+    }
+
+    private void searchExtra(String query) {
+        loadingMoreItemsIndicator.setVisibility(View.VISIBLE);
+        new GetProductListFromApiAsyncTask(ProductListFragment.this, user.getEmail(), user.getPassword(),
+                query, ((ProductGroupModel) spinner.getSelectedItem()).getA(), productsLoaded + 1, productsLoaded + SEARCH_RESULTS_DEFAULT).execute();
+    }
+
+    private void search(String query) {
+        setStateLoading();
+        moreToLoad = true;
+        productsLoaded = 0;
+        resultProductList = new ArrayList<>();
+        productListAdapter.setProducts(new ArrayList<Product>());
+        new GetProductListFromApiAsyncTask(ProductListFragment.this, user.getEmail(), user.getPassword(),
+                query, ((ProductGroupModel) spinner.getSelectedItem()).getA(), 1, SEARCH_RESULTS_DEFAULT).execute();
     }
 
     private void setStateLoading() {
@@ -191,12 +252,19 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
     // search finished
     @Override
     public void processFinish(List<Product> models) {
-        resultProductList = setResults(models);
-        String selectedGroup = productGroupModels.get(spinner.getSelectedItemPosition()).getA();
-        productListAdapter.setProducts(filterListBySelectedGroup(selectedGroup));
-        productListAdapter.notifyDataSetChanged();
+        loadingMoreItemsIndicator.setVisibility(View.GONE);
+        int modelsCount = models.size();
+        productsLoaded += modelsCount;
+        if (modelsCount < SEARCH_RESULTS_DEFAULT) {
+            moreToLoad = false;
+        }
+        List<Product> unknownName = setResults(models);
+        resultProductList.addAll(unknownName);
+        productListAdapter.addProducts(unknownName);
+        //productListAdapter.notifyDataSetChanged();
         setStateLoaded();
         refreshRecyclerViewAppearance();
+        isLoadingMore = false;
     }
 
     // product groups have been fetched from api
@@ -207,20 +275,10 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
                 (getContext(), android.R.layout.simple_spinner_item, productGroups); //selected item will look like a spinner set from XML
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(spinnerArrayAdapter);
-    }
-
-    private List<Product> filterListBySelectedGroup(String selectedGroup) {
-
-        if (selectedGroup.isEmpty())
-            return ProductListFragment.this.resultProductList;
-
-        List<Product> filteredProducts = new ArrayList<>();
-        for (Product product : ProductListFragment.this.resultProductList) {
-            if (selectedGroup.equals(product.getD())) {
-                filteredProducts.add(product);
-            }
+        if (spinnerSelectedItemPosition != -1) {
+            spinner.setSelection(spinnerSelectedItemPosition, true);
         }
-        return filteredProducts;
+        spinnerSelectedItemPosition = spinner.getSelectedItemPosition();
     }
 
     // method that merges the non-db saved and saved product
@@ -278,17 +336,23 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         private String username;
         private String password;
         private String keyword;
+        private String classif;
+        private int fromRows;
+        private int toRows;
 
-        public GetProductListFromApiAsyncTask(ProductListAsyncResponse delegate, String username, String password, String keyword) {
+        public GetProductListFromApiAsyncTask(ProductListAsyncResponse delegate, String username, String password, String keyword, String classif, int fromRows, int toRows) {
             this.delegate = delegate;
             this.username = username;
             this.password = password;
             this.keyword = keyword;
+            this.classif = classif;
+            this.fromRows = fromRows;
+            this.toRows = toRows;
         }
 
         @Override
         protected List<Product> doInBackground(Void... voids) {
-            return JsonParser.getProductsFromApi(username, password, keyword);
+            return JsonParser.getProductsFromApi(username, password, keyword, classif, fromRows, toRows);
         }
 
         @Override

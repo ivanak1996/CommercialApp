@@ -38,27 +38,27 @@
 
             <SearchView
                 android:id="@+id/search_view_products"
-                android:layout_weight="5"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:paddingLeft="12dp"
-                android:searchIcon="@null"
+                android:layout_weight="5"
                 android:iconifiedByDefault="false"
                 android:imeOptions="flagNoExtractUi"
+                android:paddingLeft="12dp"
                 android:queryHint="Search for products"
+                android:searchIcon="@null"
                 android:visibility="visible" />
 
             <ImageButton
                 android:id="@+id/imageView_search"
-                android:paddingTop="10dp"
-                android:paddingBottom="8dp"
-                android:paddingRight="10dp"
                 android:layout_width="0dp"
-                android:layout_marginRight="10dp"
-                android:src="@drawable/ic_search"
                 android:layout_height="match_parent"
-                android:layout_weight="1"/>
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:paddingTop="10dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="8dp"
+                android:src="@drawable/ic_search" />
 
         </LinearLayout>
 
@@ -72,16 +72,17 @@
                 android:id="@+id/recycler_view_productsList"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="3"
+                android:layout_weight="10"
                 tools:listitem="@layout/product_list_item" />
 
-            <LinearLayout
-                android:id="@+id/layout_keyboard"
+            <include
+                android:visibility="gone"
+                android:id="@+id/list_item_loading"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:orientation="vertical"
-                android:visibility="gone" />
+                layout="@layout/product_list_item_loading" />
+
         </LinearLayout>
 
         <TextView

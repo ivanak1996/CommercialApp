@@ -46,6 +46,8 @@ public class ProductListActivity extends AppCompatActivity implements Navigation
         Intent caller = getIntent();
         this.user = (User) caller.getSerializableExtra(EXTRA_USER);
 
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
         init();
 
     }
