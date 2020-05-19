@@ -19,14 +19,13 @@ import java.util.List;
 
 import static android.view.ViewGroup.LayoutParams.FILL_PARENT;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 
 public class ProductKeyboard {
 
     //private LinearLayout container;
 
-    private LinearLayout firstRowContainer;
+    private LinearLayout numericContainer;
     private List<Button> numericButtons = new ArrayList<>();
     private Button decimalPointButton;
 
@@ -40,23 +39,29 @@ public class ProductKeyboard {
     private TextView resultTextView;
 
     private Product product = null;
+    private boolean isDecimal = false;
 
     public ProductKeyboard(final Context context, Product product, LinearLayout container) {
         //this.container = container;
 
         this.product = product;
+        double quantity = product.getQuantity();
+        int quantityDecimal = product.getQuantityInt();
+        if (quantity - quantityDecimal > 0.00) {
+            isDecimal = true;
+        }
 
-        firstRowSetup(context);
-        secondRowSetup(context);
-        container.addView(firstRowContainer);
+        numericRowSetup(context);
+        shortcutRowSetup(context);
         container.addView(shortcutsContainer);
+        container.addView(numericContainer);
 
-        resultTextView.setText("" + product.getQuantity());
+        setResultTextView();
     }
 
     private void setProduct(Product product) {
         this.product = product;
-        resultTextView.setText("" + product.getQuantity());
+        setResultTextView();
     }
 
     public void saveProductState(ProductViewModel productViewModel, long orderId) {
@@ -64,7 +69,7 @@ public class ProductKeyboard {
             productViewModel.insert(product, orderId);
     }
 
-    private void secondRowSetup(Context context) {
+    private void shortcutRowSetup(Context context) {
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(MATCH_PARENT, 0);
         p.weight = 2;
         shortcutsContainer = new LinearLayout(context);
@@ -83,10 +88,10 @@ public class ProductKeyboard {
             @Override
             public void onClick(View v) {
                 if (product != null) {
-                    int quantity = product.getQuantity();
-                    if (quantity > 0) {
+                    double quantity = product.getQuantity();
+                    if (quantity >= 1.0) {
                         product.setQuantity(quantity - 1);
-                        resultTextView.setText("" + (product.getQuantity()));
+                        setResultTextView();
                     }
                 }
             }
@@ -97,7 +102,7 @@ public class ProductKeyboard {
             public void onClick(View v) {
                 if (product != null) {
                     product.setQuantity(product.getQuantity() + 1);
-                    resultTextView.setText("" + (product.getQuantity()));
+                    setResultTextView();
                 }
             }
         });
@@ -107,7 +112,7 @@ public class ProductKeyboard {
             public void onClick(View v) {
                 if (product != null) {
                     product.setQuantity(product.getQuantity() + 10);
-                    resultTextView.setText("" + (product.getQuantity()));
+                    setResultTextView();
                 }
             }
         });
@@ -117,7 +122,7 @@ public class ProductKeyboard {
             public void onClick(View v) {
                 if (product != null) {
                     product.setQuantity(0);
-                    resultTextView.setText("0");
+                    setResultTextView();
                 }
             }
         });
@@ -131,12 +136,22 @@ public class ProductKeyboard {
 
     }
 
-    private void firstRowSetup(Context context) {
+    private void setResultTextView() {
+        String txt = "";
+        if (isDecimal) {
+            txt += product.getQuantity();
+        } else {
+            txt += product.getQuantityInt();
+        }
+        resultTextView.setText(txt);
+    }
+
+    private void numericRowSetup(Context context) {
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(MATCH_PARENT, 0);
         p.weight = 3;
-        firstRowContainer = new LinearLayout(context);
-        firstRowContainer.setLayoutParams(p);
-        firstRowContainer.setOrientation(LinearLayout.HORIZONTAL);
+        numericContainer = new LinearLayout(context);
+        numericContainer.setLayoutParams(p);
+        numericContainer.setOrientation(LinearLayout.HORIZONTAL);
 
         // add numeric buttons
         for (int i = 0; i <= 9; i++) {
@@ -146,27 +161,35 @@ public class ProductKeyboard {
                 public void onClick(View v) {
                     if (product != null) {
                         int buttonValue = Integer.parseInt(((Button) v).getText().toString());
-                        int quantity = product.getQuantity();
-                        quantity = quantity * 10 + buttonValue;
+                        double quantity = product.getQuantity();
+                        if (isDecimal) {
+                            quantity = Double.parseDouble(resultTextView.getText().toString() + buttonValue);
+                        } else {
+                            quantity = quantity * 10 + buttonValue;
+                        }
                         product.setQuantity(quantity);
-                        resultTextView.setText("" + quantity);
+                        setResultTextView();
                     }
                 }
             });
             numericButtons.add(new Button(context));
-            firstRowContainer.addView(button);
+            numericContainer.addView(button);
         }
 
-        if (product.getE().equals("KG")) {
+        if (product.getE().replaceAll("\\s+", "").equals("KG")) {
             // add clear button
             decimalPointButton = generateNewButton(context, ".");
             decimalPointButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // TODO
+                    if (!isDecimal) {
+                        isDecimal = true;
+                        //setResultTextView();
+                        resultTextView.setText(resultTextView.getText().toString() + ".");
+                    }
                 }
             });
-            firstRowContainer.addView(decimalPointButton);
+            numericContainer.addView(decimalPointButton);
         }
     }
 

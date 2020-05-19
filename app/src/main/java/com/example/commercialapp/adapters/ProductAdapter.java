@@ -73,7 +73,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
         if (currentProduct.getQuantity() == 0) {
             holder.textViewQuantity.setText("");
         } else {
-            holder.textViewQuantity.setText("" + currentProduct.getQuantity() + " " + currentProduct.getE());
+            holder.textViewQuantity.setText(currentProduct.getQuantityAsString() + " " + currentProduct.getE());
         }
 
         if (currentProduct == selectedProduct) {

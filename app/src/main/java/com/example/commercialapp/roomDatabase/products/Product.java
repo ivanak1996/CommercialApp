@@ -9,7 +9,7 @@ public class Product {
     @PrimaryKey(autoGenerate = true)
     private long rowId;
 
-    private int quantity;
+    private double quantity;
     private long orderRowId;
 
     private String a; //id,
@@ -23,7 +23,7 @@ public class Product {
     private String r; //rabat
     private String i; //url do slike
 
-    public Product(long orderRowId, int quantity, String a, String b, String c, String d, String e, String f, String v, String p, String r, String i) {
+    public Product(long orderRowId, double quantity, String a, String b, String c, String d, String e, String f, String v, String p, String r, String i) {
         this.orderRowId = orderRowId;
         this.quantity = quantity;
         this.a = a;
@@ -46,7 +46,7 @@ public class Product {
         this.orderRowId = orderRowId;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(double quantity) {
         this.quantity = quantity;
     }
 
@@ -61,8 +61,29 @@ public class Product {
         return orderRowId;
     }
 
-    public int getQuantity() {
+    public double getQuantity() {
         return quantity;
+    }
+
+    public int getQuantityInt() {
+        return (int) quantity;
+    }
+
+    public String getQuantityAsString() {
+        double quantity = getQuantity();
+        int quantityDecimal = getQuantityInt();
+        if (quantity - quantityDecimal > 0.00) {
+            return "" + round(quantity, 2);
+        } else {
+            return "" + getQuantityInt();
+        }
+    }
+
+    public double round(double value, int places) {
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
     }
 
 
