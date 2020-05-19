@@ -163,7 +163,12 @@ public class ProductKeyboard {
                         int buttonValue = Integer.parseInt(((Button) v).getText().toString());
                         double quantity = product.getQuantity();
                         if (isDecimal) {
-                            quantity = Double.parseDouble(resultTextView.getText().toString() + buttonValue);
+                            String resultString = resultTextView.getText().toString();
+                            int integerPlaces = resultString.indexOf('.');
+                            int decimalPlaces = resultString.length() - integerPlaces - 1;
+                            if (decimalPlaces < 2) {
+                                quantity = Double.parseDouble(resultString + buttonValue);
+                            }
                         } else {
                             quantity = quantity * 10 + buttonValue;
                         }
