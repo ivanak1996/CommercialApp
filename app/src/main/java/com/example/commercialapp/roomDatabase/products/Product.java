@@ -79,6 +79,20 @@ public class Product {
         }
     }
 
+    public double calcPriceWithRabat() {
+        double price = Double.parseDouble(p);
+        double rabat = Double.parseDouble(r);
+        double pdv = Double.parseDouble(v);
+        return (price * (1 - rabat / 100)) * (1 + pdv / 100) * quantity;
+    }
+
+    public String calcPriceWithRabatAsString() {
+        double price = Double.parseDouble(p);
+        double rabat = Double.parseDouble(r);
+        double pdv = Double.parseDouble(v);
+        return "" + round((price * (1 - rabat / 100)) * (1 + pdv / 100) * quantity, 2) + " RSD";
+    }
+
     public double round(double value, int places) {
         long factor = (long) Math.pow(10, places);
         value = value * factor;

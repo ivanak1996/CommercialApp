@@ -69,11 +69,15 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
     public void onBindViewHolder(@NonNull ProductHolder holder, int position) {
         Product currentProduct = products.get(position);
         holder.textViewTitle.setText(currentProduct.getC());
+        holder.textViewPrice.setText(currentProduct.getP() + " RSD");
+        holder.textViewRabat.setText(currentProduct.getR() + " %");
 
         if (currentProduct.getQuantity() == 0) {
             holder.textViewQuantity.setText("");
+            holder.textViewTotalPrice.setText("");
         } else {
             holder.textViewQuantity.setText(currentProduct.getQuantityAsString() + " " + currentProduct.getE());
+            holder.textViewTotalPrice.setText(currentProduct.calcPriceWithRabatAsString());
         }
 
         if (currentProduct == selectedProduct) {
@@ -127,6 +131,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
         private CardView wrapper;
         private TextView textViewTitle;
         private TextView textViewQuantity;
+        private TextView textViewPrice;
+        private TextView textViewRabat;
+        private TextView textViewTotalPrice;
         private LinearLayout keyboardLayout;
         private ProductKeyboard keyboard;
 
@@ -135,6 +142,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
             wrapper = itemView.findViewById(R.id.cardview_wrapper);
             textViewTitle = itemView.findViewById(R.id.text_view_productName);
             textViewQuantity = itemView.findViewById(R.id.text_view_productQuantity);
+            textViewPrice = itemView.findViewById(R.id.text_view_price);
+            textViewRabat = itemView.findViewById(R.id.text_view_rabat);
+            textViewTotalPrice = itemView.findViewById(R.id.text_view_price_total);
             keyboardLayout = itemView.findViewById(R.id.item_keyboard);
 
             itemView.setOnClickListener(new View.OnClickListener() {

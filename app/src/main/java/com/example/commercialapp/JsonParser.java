@@ -99,7 +99,7 @@ public class JsonParser {
                     JSONObject o = list.getJSONObject(j);
                     String a = o.getString("a").trim();
                     String b = o.getString("b");
-                    productGroups.add(new ProductGroupModel(a, b));
+                    productGroups.add(new ProductGroupModel(a, b.isEmpty() ? "Izaberite grupu prozvoda" : b));
                 }
 
             } catch (JSONException e) {

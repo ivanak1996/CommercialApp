@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
 
 import com.example.commercialapp.R;
 import com.example.commercialapp.roomDatabase.products.Product;
@@ -40,6 +41,8 @@ public class ProductKeyboard {
 
     private Product product = null;
     private boolean isDecimal = false;
+    private boolean decimalModeOn = false;
+    private boolean decimalModeWasChanged = false;
 
     public ProductKeyboard(final Context context, Product product, LinearLayout container) {
         //this.container = container;
@@ -50,6 +53,7 @@ public class ProductKeyboard {
         if (quantity - quantityDecimal > 0.00) {
             isDecimal = true;
         }
+        decimalModeOn = false;
 
         numericRowSetup(context);
         shortcutRowSetup(context);
@@ -122,6 +126,7 @@ public class ProductKeyboard {
             public void onClick(View v) {
                 if (product != null) {
                     product.setQuantity(0);
+                    isDecimal = false;
                     setResultTextView();
                 }
             }
@@ -155,7 +160,7 @@ public class ProductKeyboard {
 
         // add numeric buttons
         for (int i = 0; i <= 9; i++) {
-            Button button = generateNewButton(context, "" + i);
+            final Button button = generateNewButton(context, "" + i);
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -163,12 +168,41 @@ public class ProductKeyboard {
                         int buttonValue = Integer.parseInt(((Button) v).getText().toString());
                         double quantity = product.getQuantity();
                         if (isDecimal) {
-                            String resultString = resultTextView.getText().toString();
-                            int integerPlaces = resultString.indexOf('.');
-                            int decimalPlaces = resultString.length() - integerPlaces - 1;
-                            if (decimalPlaces < 2) {
-                                quantity = Double.parseDouble(resultString + buttonValue);
+                            String resString = resultTextView.getText().toString();
+                            String[] parts = resString.split("\\.");
+
+                            String intPartString = parts[0];
+                            int intPart = Integer.parseInt(parts[0]);
+                            String decPartString = "";
+                            if (parts.length > 1) {
+                                decPartString = parts[1];
                             }
+
+                            String decPartFinal = decPartString;
+                            String intPartFinal = intPartString;
+
+                            if (decimalModeOn) { // we are changing the decimal part
+                                //intPartFinal = intPartString;
+                                if (decimalModeWasChanged) {
+                                    decPartFinal = "";
+                                    decPartString = "";
+                                }
+                                if (decPartString.length() < 2)
+                                    decPartFinal = decPartString + buttonValue;
+                            } else { // changing the int part
+                                //decPartFinal = decPartString;
+                                if (decimalModeWasChanged) {
+                                    intPart = 0;
+                                }
+                                intPart = intPart * 10 + buttonValue;
+                                intPartFinal = "" + intPart;
+                            }
+
+
+                            String newResult = decPartFinal != null ? intPartFinal + "." + decPartFinal : intPartFinal;
+                            quantity = Double.parseDouble(newResult);
+                            decimalModeWasChanged = false;
+
                         } else {
                             quantity = quantity * 10 + buttonValue;
                         }
@@ -187,6 +221,13 @@ public class ProductKeyboard {
             decimalPointButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    decimalModeOn = !decimalModeOn;
+                    if (!decimalModeOn) {
+                        setButtonClickedAppearance(decimalPointButton, false);
+                    } else {
+                        setButtonClickedAppearance(decimalPointButton, true);
+                    }
+                    decimalModeWasChanged = true;
                     if (!isDecimal) {
                         isDecimal = true;
                         //setResultTextView();
@@ -220,12 +261,17 @@ public class ProductKeyboard {
         return imageButton;
     }
 
+    private void setButtonClickedAppearance(Button b, boolean pressed) {
+        ViewCompat.setBackgroundTintList(b, ContextCompat.getColorStateList(b.getContext(), pressed ? android.R.color.white : android.R.color.darker_gray));
+    }
+
     private Button generateNewButton(Context context, String label) {
         Button button = new Button(context);
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, FILL_PARENT);
         p.weight = 1;
         p.leftMargin = -10;
         p.rightMargin = -10;
+        ViewCompat.setBackgroundTintList(button, ContextCompat.getColorStateList(context, android.R.color.darker_gray));
         button.setLayoutParams(p);
         button.setText(label);
         return button;
