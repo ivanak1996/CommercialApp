@@ -69,8 +69,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
     public void onBindViewHolder(@NonNull ProductHolder holder, int position) {
         Product currentProduct = products.get(position);
         holder.textViewTitle.setText(currentProduct.getC());
-        holder.textViewPrice.setText(currentProduct.getP() + " RSD");
-        holder.textViewRabat.setText(currentProduct.getR() + " %");
+        holder.textViewPrice.setText("cena: " + currentProduct.getP() + " RSD");
+        holder.textViewRabat.setText("rabat: " + currentProduct.getR() + " %");
 
         if (currentProduct.getQuantity() == 0) {
             holder.textViewQuantity.setText("");
@@ -84,7 +84,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductH
             holder.wrapper.setBackgroundColor(Color.rgb(229, 255, 204));
             holder.keyboardLayout.setVisibility(View.VISIBLE);
             holder.keyboardLayout.removeAllViews();
-            holder.keyboard = new ProductKeyboard(holder.keyboardLayout.getContext(), products.get(position), holder.keyboardLayout);
+            holder.keyboard = new ProductKeyboard(holder.keyboardLayout.getContext(), products.get(position), holder.keyboardLayout, holder.textViewTotalPrice);
         } else {
             holder.keyboardLayout.setVisibility(View.GONE);
             holder.wrapper.setBackgroundColor(Color.rgb(255, 255, 255));

@@ -34,19 +34,21 @@ public class ProductKeyboard {
     private ImageView minusButton;
     private ImageView plusButton;
     private ImageView xButton;
-    private ImageView infoButton;
+    private ImageView saveButton;
     private ImageView deleteButton;
 
     private TextView resultTextView;
+    private TextView totalPriceTextView;
 
     private Product product = null;
     private boolean isDecimal = false;
     private boolean decimalModeOn = false;
     private boolean decimalModeWasChanged = false;
 
-    public ProductKeyboard(final Context context, Product product, LinearLayout container) {
+    public ProductKeyboard(final Context context, Product product, LinearLayout container, TextView totalPriceTextView) {
         //this.container = container;
 
+        this.totalPriceTextView = totalPriceTextView;
         this.product = product;
         double quantity = product.getQuantity();
         int quantityDecimal = product.getQuantityInt();
@@ -85,7 +87,7 @@ public class ProductKeyboard {
         resultTextView = generateTextView(context);
         plusButton = generateImageButton(context, R.drawable.ic_add_circle);
         xButton = generateImageButton(context, R.drawable.ic_multi);
-        infoButton = generateImageButton(context, R.drawable.ic_info);
+        saveButton = generateImageButton(context, R.drawable.ic_save);
         deleteButton = generateImageButton(context, R.drawable.ic_delete);
 
         minusButton.setOnClickListener(new View.OnClickListener() {
@@ -137,7 +139,7 @@ public class ProductKeyboard {
         shortcutsContainer.addView(resultTextView);
         shortcutsContainer.addView(plusButton);
         shortcutsContainer.addView(xButton);
-        shortcutsContainer.addView(infoButton);
+        shortcutsContainer.addView(saveButton);
 
     }
 
@@ -149,11 +151,12 @@ public class ProductKeyboard {
             txt += product.getQuantityInt();
         }
         resultTextView.setText(txt);
+        totalPriceTextView.setText(product.calcPriceWithRabatAsString());
     }
 
     private void numericRowSetup(Context context) {
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(MATCH_PARENT, 0);
-        p.weight = 3;
+        p.weight = 4;
         numericContainer = new LinearLayout(context);
         numericContainer.setLayoutParams(p);
         numericContainer.setOrientation(LinearLayout.HORIZONTAL);
@@ -216,7 +219,7 @@ public class ProductKeyboard {
         }
 
         if (product.getE().replaceAll("\\s+", "").equals("KG")) {
-            // add clear button
+            // add decimal button
             decimalPointButton = generateNewButton(context, ".");
             decimalPointButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -245,7 +248,7 @@ public class ProductKeyboard {
         p.weight = 1;
         textView.setLayoutParams(p);
         textView.setText("res");
-        textView.setTextSize(20.0f);
+        textView.setTextSize(24.0f);
         textView.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
         return textView;
     }
@@ -269,11 +272,12 @@ public class ProductKeyboard {
         Button button = new Button(context);
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, FILL_PARENT);
         p.weight = 1;
-        p.leftMargin = -10;
-        p.rightMargin = -10;
+        p.leftMargin = -6;
+        p.rightMargin = -6;
         ViewCompat.setBackgroundTintList(button, ContextCompat.getColorStateList(context, android.R.color.darker_gray));
         button.setLayoutParams(p);
         button.setText(label);
+        button.setTextSize(24.0f);
         return button;
     }
 
