@@ -33,4 +33,7 @@ public class OrderViewModel extends AndroidViewModel {
         orderRepository.getOpenedOrder(response);
     }
 
+    public void deleteAll() {
+        orderRepository.deleteAll();
+    }
 }

@@ -13,6 +13,8 @@ import android.os.Bundle;
 import android.view.MenuItem;
 
 import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlaceViewModel;
+import com.example.commercialapp.roomDatabase.orders.OrderViewModel;
+import com.example.commercialapp.roomDatabase.products.ProductViewModel;
 import com.example.commercialapp.roomDatabase.user.User;
 import com.example.commercialapp.roomDatabase.user.UserViewModel;
 import com.google.android.material.navigation.NavigationView;
@@ -26,6 +28,8 @@ public class ProductListActivity extends AppCompatActivity implements Navigation
 
     private UserViewModel userViewModel;
     private DeliveryPlaceViewModel deliveryPlaceViewModel;
+    private ProductViewModel productViewModel;
+    private OrderViewModel orderViewModel;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private AppBarConfiguration appBarConfiguration;
@@ -42,6 +46,8 @@ public class ProductListActivity extends AppCompatActivity implements Navigation
 
         userViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
         deliveryPlaceViewModel = ViewModelProviders.of(this).get(DeliveryPlaceViewModel.class);
+        productViewModel = ViewModelProviders.of(this).get(ProductViewModel.class);
+        orderViewModel = ViewModelProviders.of(this).get(OrderViewModel.class);
 
         Intent caller = getIntent();
         this.user = (User) caller.getSerializableExtra(EXTRA_USER);
@@ -73,6 +79,8 @@ public class ProductListActivity extends AppCompatActivity implements Navigation
 
     public void logout() {
         deliveryPlaceViewModel.deleteAll();
+        productViewModel.deleteAll();
+        orderViewModel.deleteAll();
         userViewModel.deleteAll();
         Intent intent = new Intent(this, LoginActivity.class);
         startActivity(intent);

@@ -52,4 +52,8 @@ public class ProductViewModel extends AndroidViewModel {
     public LiveData<List<Product>> getAllProductsInOpenedOrder() {
         return allProductsInOpenedOrder;
     }
+
+    public void deleteAll() {
+        productRepository.deleteAll();
+    }
 }

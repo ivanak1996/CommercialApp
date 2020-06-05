@@ -42,6 +42,15 @@ public class OrderRepository {
         new OpenedOrderAsyncTask(orderDao, response).execute();
     }
 
+    public void deleteAll() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                orderDao.deleteAll();
+            }
+        }).start();
+    }
+
     private static class InsertOrderAsyncTask extends AsyncTask<Order, Void, Long> {
 
         private OrderDao orderDao;

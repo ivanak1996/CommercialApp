@@ -59,4 +59,14 @@ public class ProductRepository {
     public LiveData<List<Product>> getAllProductsInOpenedOrder() {
         return allProductsInOpenedOrder;
     }
+
+    public void deleteAll() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                productDao.deleteAll();
+            }
+        }).start();
+
+    }
 }

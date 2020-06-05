@@ -18,4 +18,6 @@ public interface OrderDao {
     @Query("select * from orders_table where status = 0")
     Order getOpenedOrder();
 
+    @Query("delete from orders_table")
+    void deleteAll();
 }
