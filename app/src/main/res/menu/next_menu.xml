@@ -4,6 +4,6 @@
     <item
         android:id="@+id/action_next"
         android:orderInCategory="100"
-        android:title="next"
+        android:title="@string/next"
         app:showAsAction="always" />
 </menu>

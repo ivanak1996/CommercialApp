@@ -17,14 +17,14 @@
 
     <EditText
         android:id="@+id/edit_text_username"
-        android:hint="Username"
+        android:hint="@string/username"
         android:layout_margin="16sp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
     <EditText
         android:id="@+id/edit_text_password"
-        android:hint="Password"
+        android:hint="@string/password"
         android:layout_margin="16sp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -42,9 +42,10 @@
         android:id="@+id/text_view_message"
         android:textAlignment="center"
         android:textColor="@color/colorAccent"
-        android:text="Wrong username or password"
+        android:text="@string/wrong_username_or_password"
         android:layout_marginTop="16sp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal" />
 
 </LinearLayout>

@@ -49,14 +49,14 @@
                 android:layout_height="match_parent">
                 <TextView
                     android:id="@+id/text_view_price"
-                    android:text="price"
+                    android:text="@string/price"
                     android:textSize="18sp"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"/>
                 <TextView
                     android:id="@+id/text_view_rabat"
-                    android:text="rabat"
+                    android:text="@string/rabat"
                     android:textSize="18sp"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
@@ -65,7 +65,7 @@
 
             <TextView
                 android:id="@+id/text_view_price_total"
-                android:text="total"
+                android:text="@string/total"
                 android:layout_weight="1"
                 android:layout_gravity="end"
                 android:textAlignment="viewEnd"
