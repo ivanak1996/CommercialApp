@@ -4,6 +4,8 @@ import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
+import java.text.DecimalFormat;
+
 @Entity(tableName = "products_table", indices = {@Index(value = {"orderRowId", "b"}, unique = true)})
 public class Product {
     @PrimaryKey(autoGenerate = true)
@@ -90,7 +92,8 @@ public class Product {
         double price = Double.parseDouble(p);
         double rabat = Double.parseDouble(r);
         double pdv = Double.parseDouble(v);
-        return "" + round((price * (1 - rabat / 100)) * (1 + pdv / 100) * quantity, 2) + " RSD";
+        DecimalFormat formatter = new DecimalFormat("#,###.00");
+        return "" + formatter.format(round((price * (1 - rabat / 100)) * (1 + pdv / 100) * quantity, 2)) + " RSD";
     }
 
     public double round(double value, int places) {

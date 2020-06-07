@@ -84,7 +84,7 @@ public class ProductKeyboard {
         shortcutsContainer.setGravity(Gravity.CENTER_VERTICAL);
 
         minusButton = generateImageButton(context, R.drawable.ic_remove_circle);
-        resultTextView = generateTextView(context);
+        resultTextView = generateTextView(context, 2);
         plusButton = generateImageButton(context, R.drawable.ic_add_circle);
         xButton = generateImageButton(context, R.drawable.ic_multi);
         saveButton = generateImageButton(context, R.drawable.ic_save);
@@ -128,7 +128,7 @@ public class ProductKeyboard {
             public void onClick(View v) {
                 if (product != null) {
                     product.setQuantity(0);
-                    isDecimal = false;
+                    decimalModeReset();
                     setResultTextView();
                 }
             }
@@ -141,6 +141,12 @@ public class ProductKeyboard {
         shortcutsContainer.addView(xButton);
         shortcutsContainer.addView(saveButton);
 
+    }
+
+    private void decimalModeReset() {
+        isDecimal = false;
+        decimalModeOn = false;
+        setButtonClickedAppearance(decimalPointButton, false);
     }
 
     private void setResultTextView() {
@@ -197,7 +203,9 @@ public class ProductKeyboard {
                                 if (decimalModeWasChanged) {
                                     intPart = 0;
                                 }
-                                intPart = intPart * 10 + buttonValue;
+                                if (intPartString.length() < 5) {
+                                    intPart = intPart * 10 + buttonValue;
+                                }
                                 intPartFinal = "" + intPart;
                             }
 
@@ -207,7 +215,8 @@ public class ProductKeyboard {
                             decimalModeWasChanged = false;
 
                         } else {
-                            quantity = quantity * 10 + buttonValue;
+                            if (String.valueOf(product.getQuantityInt()).length() < 5)
+                                quantity = quantity * 10 + buttonValue;
                         }
                         product.setQuantity(quantity);
                         setResultTextView();
@@ -242,10 +251,10 @@ public class ProductKeyboard {
         }
     }
 
-    private TextView generateTextView(Context context) {
+    private TextView generateTextView(Context context, int weight) {
         TextView textView = new TextView(context);
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, 180);
-        p.weight = 1;
+        p.weight = weight;
         textView.setLayoutParams(p);
         textView.setText("res");
         textView.setTextSize(24.0f);
