@@ -4,25 +4,40 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.*;
 import androidx.navigation.ui.*;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.commercialapp.asyncResponses.GetOpenedOrderAsyncResponse;
+import com.example.commercialapp.asyncResponses.PlaceAnOrderAsyncResponse;
+import com.example.commercialapp.models.OrderModel;
 import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlaceViewModel;
+import com.example.commercialapp.roomDatabase.orders.Order;
 import com.example.commercialapp.roomDatabase.orders.OrderViewModel;
+import com.example.commercialapp.roomDatabase.products.Product;
 import com.example.commercialapp.roomDatabase.products.ProductViewModel;
 import com.example.commercialapp.roomDatabase.user.User;
 import com.example.commercialapp.roomDatabase.user.UserViewModel;
 import com.google.android.material.navigation.NavigationView;
 
+import org.json.JSONException;
+
+import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-public class ProductListActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class ProductListActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, PlaceAnOrderAsyncResponse {
 
     public static final String EXTRA_USER = "EXTRA_USER";
 
@@ -34,6 +49,8 @@ public class ProductListActivity extends AppCompatActivity implements Navigation
     private NavigationView navigationView;
     private AppBarConfiguration appBarConfiguration;
     private User user;
+
+    private List<Product> products;
 
     private long previousDrawerItemClicked = -1;
 
@@ -48,6 +65,13 @@ public class ProductListActivity extends AppCompatActivity implements Navigation
         deliveryPlaceViewModel = ViewModelProviders.of(this).get(DeliveryPlaceViewModel.class);
         productViewModel = ViewModelProviders.of(this).get(ProductViewModel.class);
         orderViewModel = ViewModelProviders.of(this).get(OrderViewModel.class);
+
+        productViewModel.getAllProductsInOpenedOrder().observe(this, new Observer<List<Product>>() {
+            @Override
+            public void onChanged(List<Product> products) {
+                ProductListActivity.this.products = products;
+            }
+        });
 
         Intent caller = getIntent();
         this.user = (User) caller.getSerializableExtra(EXTRA_USER);
@@ -147,4 +171,52 @@ public class ProductListActivity extends AppCompatActivity implements Navigation
         return NavigationUI.navigateUp(Navigation.findNavController(this, R.id.nav_host_fragment), appBarConfiguration);
     }
 
+    public void placeAnOrder(View view) {
+        Spinner deliveryPlaceSpinner = findViewById(R.id.spinner_delivery_place);
+        TextView notesTextView = findViewById(R.id.notes_textview);
+        OrderModel orderModel = new OrderModel(user.getId(), deliveryPlaceSpinner.getSelectedItem().toString(), notesTextView.getText().toString(), products);
+        new PlaceAnOrderAsyncTask(user.getEmail(), user.getPassword(), orderModel, this).execute();
+    }
+
+    @Override
+    public void processFinish(boolean success) {
+        if (success) {
+            productViewModel.deleteAll();
+            orderViewModel.deleteAll();
+            NavOptions navOptions = new NavOptions.Builder()
+                    .setPopUpTo(R.id.main, false)
+                    .build();
+            Navigation.findNavController(this, R.id.nav_host_fragment)
+                    .navigate(R.id.productListScreenFragment, null, navOptions);
+            Toast.makeText(this, R.string.sent_order, Toast.LENGTH_SHORT).show();
+            orderViewModel.insert(new Order(Order.STATUS_OPEN, new Date(System.currentTimeMillis())));
+        } else {
+            Toast.makeText(this, R.string.error_order, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private static class PlaceAnOrderAsyncTask extends AsyncTask<Void, Void, Boolean> {
+
+        private PlaceAnOrderAsyncResponse delegate;
+        private String username;
+        private String password;
+        private OrderModel orderModel;
+
+        public PlaceAnOrderAsyncTask(String username, String password, OrderModel orderModel, PlaceAnOrderAsyncResponse delegate) {
+            this.delegate = delegate;
+            this.username = username;
+            this.password = password;
+            this.orderModel = orderModel;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            return JsonParser.sendOrderData(username, password, orderModel);
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            delegate.processFinish(aBoolean);
+        }
+    }
 }

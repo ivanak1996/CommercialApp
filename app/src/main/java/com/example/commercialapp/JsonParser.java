@@ -8,6 +8,7 @@ import java.util.List;
 import org.json.*;
 
 import com.example.commercialapp.models.LoginUserResult;
+import com.example.commercialapp.models.OrderModel;
 import com.example.commercialapp.models.ProductGroupModel;
 import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlace;
 import com.example.commercialapp.roomDatabase.products.Product;
@@ -23,6 +24,43 @@ public class JsonParser {
     public final static int ID_PRODUCT_NOT_SAVED = -1;
     static JSONObject jObj = null;
     static String json = "";
+
+    public static boolean sendOrderData(String userEmail, String userPassword, OrderModel orderModel) {
+
+        String charset = "UTF-8";
+        String action = "order";
+        String data;
+        String query;
+
+        try {
+            JSONObject jsonData = orderModel.toJSON();
+            data = jsonData.toString();
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        try {
+            query = String.format("userEmail=%s&userPass=%s&action=%s&data=%s",
+                    URLEncoder.encode(userEmail, charset),
+                    URLEncoder.encode(userPassword, charset),
+                    URLEncoder.encode(action, charset),
+                    URLEncoder.encode(data, charset));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        JSONObject result = getJSONFromUrlQuery(API_URL, query);
+
+        try {
+            if (result.get("acKey") != null) return true;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 
     public static String getJSONFromUrlStrQuery(String url, String q) {
         try {

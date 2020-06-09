@@ -128,7 +128,8 @@ public class ProductKeyboard {
             public void onClick(View v) {
                 if (product != null) {
                     product.setQuantity(0);
-                    decimalModeReset();
+                    if (decimalPointButton != null)
+                        decimalModeReset();
                     setResultTextView();
                 }
             }

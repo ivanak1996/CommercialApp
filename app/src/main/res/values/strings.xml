@@ -18,4 +18,6 @@
     <string name="send">posalji narudzbenicu</string>
     <string name="next">dalje</string>
     <string name="searc_hint">Pretraga proizvoda</string>
+    <string name="error_order">Greška prilikom slanja porudžbine</string>
+    <string name="sent_order">Poslato</string>
 </resources>
