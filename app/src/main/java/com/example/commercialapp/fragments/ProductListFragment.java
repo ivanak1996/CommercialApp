@@ -11,12 +11,14 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.*;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.commercialapp.JsonParser;
 import com.example.commercialapp.ProductListActivity;
 import com.example.commercialapp.asyncResponses.*;
 import com.example.commercialapp.R;
 import com.example.commercialapp.adapters.ProductAdapter;
+import com.example.commercialapp.fragments.lambdas.IVoidLambda;
 import com.example.commercialapp.models.*;
 import com.example.commercialapp.roomDatabase.orders.Order;
 import com.example.commercialapp.roomDatabase.orders.OrderViewModel;
@@ -37,6 +39,8 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
     private Spinner spinner;
     private int spinnerSelectedItemPosition = -1;
 
+    private SwipeRefreshLayout swipeRefreshLayout;
+
     private List<ProductGroupModel> productGroupModels = new ArrayList<>();
 
     private int productsLoaded = 0;
@@ -45,6 +49,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
 
     private LinearLayout loading;
     private LinearLayout loaded;
+    private LinearLayout errorScreen;
     private LinearLayout productListWrapper;
 
     private User user;
@@ -59,6 +64,8 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
     private TextView productCountTextView;
 
     private LinearLayout loadingMoreItemsIndicator;
+
+    private IVoidLambda lastRequest;
 
     public ProductListFragment() {
         setHasOptionsMenu(true);
@@ -81,10 +88,6 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //String selectedGroup = productGroupModels.get(position).getA();
-                //productListAdapter.setProducts(filterListBySelectedGroup(selectedGroup));
-                //productListAdapter.notifyDataSetChanged();
-                //refreshRecyclerViewAppearance();
                 spinnerSelectedItemPosition = position;
             }
 
@@ -125,7 +128,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         setRetainInstance(true);
 
         loadingMoreItemsIndicator = view.findViewById(R.id.list_item_loading);
-
+        errorScreen = view.findViewById(R.id.error_screen);
         noDataInRecyclerView = view.findViewById(R.id.empty_search_results);
 
         // search bar
@@ -208,39 +211,80 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         orderViewModel.getOpenedOrder(this);
 
 
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if (productGroupModels == null || productGroupModels.size() == 0)
+                    new GetProductGroupListFromApiAsyncTask(ProductListFragment.this, user.getEmail(), user.getPassword()).execute();
+                swipeRefreshLayout.setRefreshing(false);
+                if (lastRequest != null) {
+                    lastRequest.execute();
+                    //lastRequest = null;
+                }
+            }
+        });
+
         // preview loading screen while user data from db is being awaited
         loading = view.findViewById(R.id.product_list_loading);
         loaded = view.findViewById(R.id.product_list_loaded);
-        loaded.setVisibility(View.VISIBLE);
-        loading.setVisibility(View.GONE);
+        setStateLoaded();
 
         return view;
     }
 
-    private void searchExtra(String query) {
-        loadingMoreItemsIndicator.setVisibility(View.VISIBLE);
-        new GetProductListFromApiAsyncTask(ProductListFragment.this, user.getEmail(), user.getPassword(),
-                query, ((ProductGroupModel) spinner.getSelectedItem()).getA(), productsLoaded + 1, productsLoaded + SEARCH_RESULTS_DEFAULT).execute();
+    private String getSpinnerSelectedItemAsSting() {
+        return spinner.getSelectedItem() != null ? ((ProductGroupModel) spinner.getSelectedItem()).getA() : "";
     }
 
-    private void search(String query) {
+
+    private void searchExtra(final String query) {
+        loadingMoreItemsIndicator.setVisibility(View.VISIBLE);
+
+        // we will need to start search over when refresh
+        lastRequest = new IVoidLambda() {
+            @Override
+            public void execute() {
+                search(query);
+            }
+        };
+
+        new GetProductListFromApiAsyncTask(ProductListFragment.this, user.getEmail(), user.getPassword(),
+                query, getSpinnerSelectedItemAsSting(), productsLoaded + 1, productsLoaded + SEARCH_RESULTS_DEFAULT).execute();
+    }
+
+    private void search(final String query) {
+        lastRequest = new IVoidLambda() {
+            @Override
+            public void execute() {
+                search(query);
+            }
+        };
         setStateLoading();
         moreToLoad = true;
         productsLoaded = 0;
         resultProductList = new ArrayList<>();
         productListAdapter.setProducts(new ArrayList<Product>());
         new GetProductListFromApiAsyncTask(ProductListFragment.this, user.getEmail(), user.getPassword(),
-                query, ((ProductGroupModel) spinner.getSelectedItem()).getA(), 1, SEARCH_RESULTS_DEFAULT).execute();
+                query, getSpinnerSelectedItemAsSting(), 1, SEARCH_RESULTS_DEFAULT).execute();
     }
 
     private void setStateLoading() {
         loaded.setVisibility(View.GONE);
         loading.setVisibility(View.VISIBLE);
+        errorScreen.setVisibility(View.GONE);
     }
 
     private void setStateLoaded() {
         loaded.setVisibility(View.VISIBLE);
         loading.setVisibility(View.GONE);
+        errorScreen.setVisibility(View.GONE);
+    }
+
+    private void setStateError() {
+        loaded.setVisibility(View.GONE);
+        loading.setVisibility(View.GONE);
+        errorScreen.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -251,7 +295,11 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
 
     // search finished
     @Override
-    public void processFinish(List<Product> models) {
+    public void processFinish(List<Product> models, boolean hasError) {
+        if (hasError) {
+            setStateError();
+            return;
+        }
         loadingMoreItemsIndicator.setVisibility(View.GONE);
         int modelsCount = models.size();
         productsLoaded += modelsCount;
@@ -357,7 +405,10 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
 
         @Override
         protected void onPostExecute(List<Product> productModels) {
-            delegate.processFinish(productModels);
+            if (productModels == null)
+                delegate.processFinish(new ArrayList<Product>(), true);
+            else
+                delegate.processFinish(productModels, false);
         }
     }
 
@@ -380,7 +431,7 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
 
         @Override
         protected void onPostExecute(List<ProductGroupModel> productGroupModels) {
-            delegate.productGroupsProcessFinish(productGroupModels);
+            delegate.productGroupsProcessFinish(productGroupModels != null ? productGroupModels : new ArrayList<ProductGroupModel>());
         }
     }
 }

@@ -54,7 +54,7 @@ public class JsonParser {
         JSONObject result = getJSONFromUrlQuery(API_URL, query);
 
         try {
-            if (result.get("acKey") != null) return true;
+            if (result != null && result.get("acKey") != null) return true;
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -62,49 +62,49 @@ public class JsonParser {
         return false;
     }
 
-    public static String getJSONFromUrlStrQuery(String url, String q) {
-        try {
-            String charset = "UTF-8";
-            String query = q;
+    public static String getJSONFromUrlStrQuery(String url, String q) throws IOException {
+        String charset = "UTF-8";
+        String query = q;
 
-            Log.d("url", query);
+        Log.d("url", query);
 
-            String urlQuery = url;
+        String urlQuery = url;
 
-            URLConnection connection = new URL(urlQuery).openConnection();
-            connection.setDoOutput(true); // Triggers POST.
-            connection.setRequestProperty("Accept-Charset", charset);
-            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=" + charset);
+        URLConnection connection = new URL(urlQuery).openConnection();
+        connection.setDoOutput(true); // Triggers POST.
+        connection.setRequestProperty("Accept-Charset", charset);
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=" + charset);
+        connection.setConnectTimeout(5000);
+        connection.setReadTimeout(5000);
 
-            OutputStream output = connection.getOutputStream();
-            output.write(query.getBytes(charset));
+        OutputStream output = connection.getOutputStream();
+        output.write(query.getBytes(charset));
 
-            InputStream is = connection.getInputStream();
+        InputStream is = connection.getInputStream();
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"), 1024 * 100);
-            StringBuilder sb = new StringBuilder();
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line + "\n");
-            }
-            is.close();
-            json = sb.toString();
-
-            return json;
-        } catch (IOException e) {
-            e.printStackTrace();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"), 1024 * 100);
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line + "\n");
         }
-        return null;
+        is.close();
+        json = sb.toString();
+
+        return json;
     }
 
     public static JSONObject getJSONFromUrlQuery(String url, String q) {
 
-        json = getJSONFromUrlStrQuery(url, q);
-        Log.e(TAG, "Error String" + json);
         try {
+            json = getJSONFromUrlStrQuery(url, q);
+            Log.e(TAG, "Error String" + json);
             jObj = new JSONObject(json);
         } catch (JSONException e) {
             Log.e(TAG, "Error parsing data " + e.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
 
         // return JSON String
@@ -168,7 +168,7 @@ public class JsonParser {
             );
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
-            return productModels;
+            return null;
         }
 
         JSONObject result = getJSONFromUrlQuery(API_URL, query);
@@ -195,6 +195,8 @@ public class JsonParser {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+        } else {
+            return null;
         }
         return productModels;
     }
