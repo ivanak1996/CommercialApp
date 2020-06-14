@@ -2,6 +2,7 @@ package com.example.commercialapp.fragments;
 
 import android.os.*;
 import android.view.*;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 
 import androidx.annotation.NonNull;
@@ -149,6 +150,10 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
         searchIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (v != null) {
+                    InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
+                    inputManager.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                }
                 search(searchView.getQuery().toString());
             }
         });
@@ -235,6 +240,15 @@ public class ProductListFragment extends Fragment implements ProductListAsyncRes
 
     private String getSpinnerSelectedItemAsSting() {
         return spinner.getSelectedItem() != null ? ((ProductGroupModel) spinner.getSelectedItem()).getA() : "";
+    }
+
+    public void hideKeyboard() {
+        // Check if no view has focus:
+        View view = getActivity().getCurrentFocus();
+        if (view != null) {
+            InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
     }
 
 

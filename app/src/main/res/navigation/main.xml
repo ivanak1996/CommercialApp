@@ -20,4 +20,19 @@
         android:label="additional info"
         tools:layout="@layout/fragment_order_extra"/>
 
+    <fragment android:id="@+id/orderHistoryFragment"
+        android:name="com.example.commercialapp.fragments.orderHistoryFragments.OrderHistoryFragment"
+        android:label="order history"
+        tools:layout="@layout/fragment_order_history"/>
+
+    <fragment android:id="@+id/orderHistoryDetailsFragment"
+        android:name="com.example.commercialapp.fragments.orderHistoryFragments.OrderHistoryDetailsFragment"
+        android:label="order history details"
+        tools:layout="@layout/fragment_order_history_details">
+        <argument
+            android:name="acKey"
+            app:argType="string"
+            android:defaultValue="0" />
+    </fragment>
+
 </navigation>

@@ -8,8 +8,10 @@ import java.util.List;
 import org.json.*;
 
 import com.example.commercialapp.models.LoginUserResult;
+import com.example.commercialapp.models.orderHistoryModels.OrderHistoryModel;
 import com.example.commercialapp.models.OrderModel;
 import com.example.commercialapp.models.ProductGroupModel;
+import com.example.commercialapp.models.orderHistoryModels.ProductHistoryModel;
 import com.example.commercialapp.roomDatabase.deliveryPlaces.DeliveryPlace;
 import com.example.commercialapp.roomDatabase.products.Product;
 import com.example.commercialapp.roomDatabase.user.User;
@@ -201,6 +203,87 @@ public class JsonParser {
         return productModels;
     }
 
+
+    public static List<ProductHistoryModel> getOrderHistoryDetailsFromApi(String userEmail, String userPassword, String orderId) {
+        ArrayList<ProductHistoryModel> products = new ArrayList<>();
+
+        String charset = "UTF-8";
+        String action = "ordersitem";
+        String query;
+
+        try {
+            query = String.format("userEmail=%s&userPass=%s&action=%s&data=%s",
+                    URLEncoder.encode(userEmail, charset),
+                    URLEncoder.encode(userPassword, charset),
+                    URLEncoder.encode(action, charset),
+                    URLEncoder.encode(orderId, charset));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return products;
+        }
+
+        JSONObject result = getJSONFromUrlQuery(API_URL, query);
+
+        if (result != null) {
+            try {
+                JSONArray list = result.getJSONArray("ordersitem");
+                for (int j = 0; j < list.length(); j++) {
+                    JSONObject o = list.getJSONObject(j);
+                    String acIdent = o.getString("acIdent");
+                    String anPrice = o.getString("anPrice");
+                    String anNo = o.getString("anNo");
+                    String acName = o.getString("acName");
+                    String anQty = o.getString("acName");
+                    String anVat = o.getString("anVat");
+                    String acUM = o.getString("acUM");
+                    products.add(new ProductHistoryModel(acIdent, anPrice, anNo, acName, anQty, anVat, acUM));
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return products;
+    }
+
+    public static List<OrderHistoryModel> getOrderHistoryFromApi(String userEmail, String userPassword) {
+        ArrayList<OrderHistoryModel> orderModels = new ArrayList<>();
+
+        String charset = "UTF-8";
+        String action = "orders";
+        String query;
+
+        try {
+            query = String.format("userEmail=%s&userPass=%s&action=%s",
+                    URLEncoder.encode(userEmail, charset),
+                    URLEncoder.encode(userPassword, charset),
+                    URLEncoder.encode(action, charset));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return orderModels;
+        }
+
+        JSONObject result = getJSONFromUrlQuery(API_URL, query);
+
+        if (result != null) {
+            try {
+                JSONArray list = result.getJSONArray("orders");
+                for (int j = 0; j < list.length(); j++) {
+                    JSONObject o = list.getJSONObject(j);
+                    String acReceiver = o.getString("acReceiver");
+                    String adDate = o.getString("adDate");
+                    String anForPay = o.getString("anForPay");
+                    String acKey = o.getString("acKey");
+                    orderModels.add(new OrderHistoryModel(acReceiver, adDate, anForPay, acKey));
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return orderModels;
+    }
+
     public static LoginUserResult getUserDataFromApi(String userEmail, String userPassword) {
 
         String charset = "UTF-8";
@@ -273,4 +356,5 @@ public class JsonParser {
         String anLimit = o.getString("anLimit");
         return new User(acName2, acAddress, acRegNo, acSubject, password, anDoeplo, acCity, anNedospelo, acCode, id, acClerk, acPost, email, anLimit);
     }
+
 }

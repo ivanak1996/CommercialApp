@@ -90,6 +90,7 @@ public class ProductListActivity extends AppCompatActivity implements Navigation
         Set<Integer> topLevelDestinations = new HashSet<>();
         topLevelDestinations.add(R.id.productListScreenFragment);
         topLevelDestinations.add(R.id.anotherFragment);
+        topLevelDestinations.add(R.id.orderHistoryFragment);
 
         appBarConfiguration = new AppBarConfiguration.Builder(topLevelDestinations)
                 .setDrawerLayout(drawerLayout)
@@ -130,6 +131,8 @@ public class ProductListActivity extends AppCompatActivity implements Navigation
                 }
                 case R.id.nav_orders: {
                     // TODO: orders history shall be here
+                    Navigation.findNavController(this, R.id.nav_host_fragment)
+                            .navigate(R.id.orderHistoryFragment);
                     break;
                 }
             }

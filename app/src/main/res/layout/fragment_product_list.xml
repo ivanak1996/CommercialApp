@@ -40,43 +40,44 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
+
+                <!--search bar-->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <SearchView
+                        android:id="@+id/search_view_products"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_weight="5"
+                        android:iconifiedByDefault="false"
+                        android:imeOptions="flagNoExtractUi"
+                        android:paddingLeft="12dp"
+                        android:queryHint="@string/searc_hint"
+                        android:searchIcon="@null"
+                        android:visibility="visible" />
+
+                    <ImageButton
+                        android:id="@+id/imageView_search"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
+                        android:layout_weight="1"
+                        android:paddingTop="10dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="8dp"
+                        android:src="@drawable/ic_search" />
+
+                </LinearLayout>
+
                 <!--list with loaded items-->
                 <LinearLayout
                     android:id="@+id/product_list_loaded"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical">
-
-                    <!--search bar-->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <SearchView
-                            android:id="@+id/search_view_products"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:layout_weight="5"
-                            android:iconifiedByDefault="false"
-                            android:imeOptions="flagNoExtractUi"
-                            android:paddingLeft="12dp"
-                            android:queryHint="@string/searc_hint"
-                            android:searchIcon="@null"
-                            android:visibility="visible" />
-
-                        <ImageButton
-                            android:id="@+id/imageView_search"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_marginRight="10dp"
-                            android:layout_weight="1"
-                            android:paddingTop="10dp"
-                            android:paddingRight="10dp"
-                            android:paddingBottom="8dp"
-                            android:src="@drawable/ic_search" />
-
-                    </LinearLayout>
 
                     <!--list with loaded items-->
                     <LinearLayout
@@ -102,23 +103,24 @@
 
                     </LinearLayout>
 
-
-                    <TextView
-                        android:id="@+id/empty_search_results"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:text="@string/no_results"
-                        android:visibility="gone" />
-
-                    <!--error screen-->
-                    <include
-                        android:id="@+id/error_screen"
-                        layout="@layout/layout_error_screen"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:visibility="gone" />
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/empty_search_results"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="@string/no_results"
+                    android:visibility="gone" />
+
+                <!--error screen-->
+                <include
+                    android:id="@+id/error_screen"
+                    layout="@layout/layout_error_screen"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone" />
+
             </LinearLayout>
         </ScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
